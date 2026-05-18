@@ -13,13 +13,13 @@ html.transparent-dark {
   --bg-glass: rgba(18, 20, 29, 0.65);
 
   --text-primary: #e8ecf4;
-  --text-secondary: #8b92a5;
-  --text-tertiary: #555d73;
-  --text-placeholder: #3a4155;
+  --text-secondary: #a0a8be;
+  --text-tertiary: #6b7590;
+  --text-placeholder: #4d5770;
   --text-inverse: #0f1117;
 
-  --border-primary: rgba(38, 42, 58, 0.6);
-  --border-secondary: rgba(30, 32, 48, 0.6);
+  --border-primary: rgba(48, 52, 72, 0.75);
+  --border-secondary: rgba(40, 42, 60, 0.75);
   --border-active: #3B9EFF;
 
   --accent-primary: #3B9EFF;

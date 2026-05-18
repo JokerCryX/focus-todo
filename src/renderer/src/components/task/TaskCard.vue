@@ -164,7 +164,7 @@ function onContextMenu(e: MouseEvent) {
 }
 
 .task-title {
-  font-size: var(--font-md);
+  font-size: var(--font-lg);
   color: var(--text-primary);
   line-height: 1.45;
   word-break: break-word;
@@ -172,7 +172,7 @@ function onContextMenu(e: MouseEvent) {
 }
 
 .task-desc {
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   color: var(--text-tertiary);
   line-height: 1.4;
   white-space: nowrap;
@@ -221,12 +221,12 @@ function onContextMenu(e: MouseEvent) {
   gap: 3px;
   flex-shrink: 0;
   margin-top: 3px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 500;
 }
 
 .cat-icon {
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
 }
 

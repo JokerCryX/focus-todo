@@ -94,7 +94,8 @@ const api = {
   },
   sound: {
     list: () => ipcRenderer.invoke('sound:list'),
-    play: (file: string) => ipcRenderer.invoke('sound:play', file)
+    play: (file: string) => ipcRenderer.invoke('sound:play', file),
+    buffer: (file: string) => ipcRenderer.invoke('sound:buffer', file)
   },
   popup: {
     openTask: (taskId: string, options?: { mode?: string, dueDate?: number }) => ipcRenderer.invoke('popup:openTask', taskId, options),

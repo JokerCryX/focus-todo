@@ -23,7 +23,7 @@ defineProps<{ label: string; tasks: Task[]; contextMode?: 'default' | 'completed
 }
 
 .group-header {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-tertiary);
   padding: var(--spacing-sm) 4px;

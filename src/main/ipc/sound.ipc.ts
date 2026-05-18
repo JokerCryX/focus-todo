@@ -1,7 +1,8 @@
 import { ipcMain } from 'electron'
-import { readdirSync } from 'fs'
+import { readdirSync, readFileSync } from 'fs'
 import { join } from 'path'
 import { app } from 'electron'
+import { exec } from 'child_process'
 
 function getSoundDir(): string {
   if (app.isPackaged) {
@@ -25,9 +26,14 @@ export function registerSoundIPC(): void {
   ipcMain.handle('sound:play', (_e, file: string) => {
     const dir = getSoundDir()
     const path = join(dir, file).replace(/\\/g, '/')
-    const { exec } = require('child_process')
     try {
-      exec(`powershell -c "$s=New-Object Media.SoundPlayer '${path}';$s.Play();Start-Sleep -Milliseconds 500"`, { windowsHide: true })
+      exec(`powershell -NoProfile -NonInteractive -Command "$s=New-Object Media.SoundPlayer '${path}';$s.PlaySync()`, { windowsHide: true })
     } catch {}
+  })
+
+  ipcMain.handle('sound:buffer', (_e, file: string) => {
+    const dir = getSoundDir()
+    const buf = readFileSync(join(dir, file))
+    return new Uint8Array(buf).buffer
   })
 }

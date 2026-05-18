@@ -8,16 +8,48 @@ export const useTaskStore = defineStore('task', () => {
   const currentFilter = ref<TaskFilter>({ view: 'inbox' })
 
   const soundCache: Record<string, string> = {}
+  const audioBufferCache: Record<string, AudioBuffer> = {}
+  const fallbackKeys = new Set<string>()
+  let audioCtx: AudioContext | null = null
 
   async function loadSoundCache() {
     const keys = ['sound_new', 'sound_complete', 'sound_remove']
     const results = await Promise.all(keys.map(k => window.api.settings.get(k)))
-    keys.forEach((k, i) => { soundCache[k] = (results[i] as string) || '' })
+    const entries: [string, string][] = []
+    keys.forEach((k, i) => {
+      const file = (results[i] as string) || ''
+      soundCache[k] = file
+      if (file) entries.push([k, file])
+    })
+    fallbackKeys.clear()
+    if (entries.length > 0) {
+      audioCtx = new AudioContext()
+      const buffers = await Promise.all(entries.map(([, f]) => window.api.sound.buffer(f)))
+      for (let i = 0; i < entries.length; i++) {
+        try {
+          const ab = (buffers[i] as ArrayBuffer).slice(0)
+          audioBufferCache[entries[i][0]] = await audioCtx.decodeAudioData(ab)
+        } catch {
+          fallbackKeys.add(entries[i][0])
+        }
+      }
+    }
   }
 
   function playSound(key: string) {
-    const file = soundCache[key]
-    if (file) window.api.sound.play(file)
+    if (fallbackKeys.has(key)) {
+      const file = soundCache[key]
+      if (file) window.api.sound.play(file)
+      return
+    }
+    const buffer = audioBufferCache[key]
+    if (!buffer) return
+    if (!audioCtx) audioCtx = new AudioContext()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+    const source = audioCtx.createBufferSource()
+    source.buffer = buffer
+    source.connect(audioCtx.destination)
+    source.start(0)
   }
 
   loadSoundCache()
@@ -37,28 +69,28 @@ export const useTaskStore = defineStore('task', () => {
 
   async function createTask(input: CreateTaskInput): Promise<Task> {
     const task = (await window.api.task.create(input)) as Task
-    await fetchTasks()
     playSound('sound_new')
+    fetchTasks()
     return task
   }
 
   async function updateTask(input: UpdateTaskInput): Promise<Task> {
     const task = (await window.api.task.update(input)) as Task
-    await fetchTasks()
     if (input.complete === 1) playSound('sound_complete')
+    fetchTasks()
     return task
   }
 
   async function toggleComplete(taskId: string, complete: boolean) {
     await window.api.task.update({ task_id: taskId, complete: complete ? 1 : 0 })
-    await fetchTasks()
     if (complete) playSound('sound_complete')
+    fetchTasks()
   }
 
   async function removeTask(taskId: string) {
     await window.api.task.remove(taskId)
-    await fetchTasks()
     playSound('sound_remove')
+    fetchTasks()
   }
 
   async function restoreTask(taskId: string) {

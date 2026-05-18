@@ -4,7 +4,7 @@
       <button class="titlebar-btn pin-btn" :class="{ active: isPinned }" @click="togglePin" :title="isPinned ? $t('titlebar.unpin') : $t('titlebar.pin')">
         <span class="pin-icon">{{ isPinned ? '📌' : '📍' }}</span>
       </button>
-      <img :src="logoUrl" class="titlebar-logo" />
+      <img :src="currentLogo" class="titlebar-logo" />
     </div>
     <div class="titlebar-controls">
       <button class="titlebar-btn" @click="minimize" :title="$t('titlebar.minimize')">
@@ -21,13 +21,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 import '@/styles/titlebar.css'
 import logoUrl from '@/assets/logo-data'
+import logoBlackUrl from '@/assets/logo-black-data'
+import { useSettingsStore } from '@/stores/settings'
 
+const settingsStore = useSettingsStore()
 const isPinned = ref(false)
+
+const currentLogo = computed(() => {
+  const t = settingsStore.theme
+  return (t === 'light' || t === 'transparent-light') ? logoBlackUrl : logoUrl
+})
 
 onMounted(async () => {
   isPinned.value = await window.api.window.isAlwaysOnTop()

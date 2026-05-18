@@ -1,7 +1,7 @@
 <template>
   <div class="note-page">
     <div class="view-header">
-      <h2>{{ $t('notes.title') }}</h2>
+      <h2 :class="{ 'focus-title': uiStore.focusNoteMode }">{{ uiStore.focusNoteMode ? '📚' : $t('notes.title') }}</h2>
       <div class="toolbar-group">
         <button class="toolbar-btn focus-btn" :class="{ active: uiStore.focusNoteMode }" @click="toggleFocus" :title="uiStore.focusNoteMode ? $t('notes.exitFocus') : $t('notes.focusMode')">
           <svg v-if="!uiStore.focusNoteMode" width="14" height="14" viewBox="0 0 16 16"><path d="M3 1v3.5h1.5V2.5H6V1H3zm7 0v1.5h1.5V4.5H13V1h-3zM3 11.5V15h3v-1.5H4.5V11.5H3zm8.5 0V13.5H10V15h3v-3.5h-1.5z" fill="currentColor"/></svg>
@@ -190,6 +190,11 @@ onUnmounted(() => {
   font-weight: 600;
   letter-spacing: -0.01em;
   color: var(--text-primary);
+}
+
+.view-header h2.focus-title {
+  position: relative;
+  top: -2px;
 }
 
 /* ── Toolbar Group (right side of header) ── */

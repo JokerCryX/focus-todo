@@ -118,7 +118,7 @@ watch(() => route.params.id, loadTasks)
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-tertiary);
   padding: var(--spacing-sm) 4px;

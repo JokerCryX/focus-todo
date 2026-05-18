@@ -4,10 +4,7 @@
     <header class="widget-header">
       <div class="header-left">
         <button class="action-btn pin-btn" :class="{ active: isPinned }" @click.stop="togglePin" :title="isPinned ? $t('titlebar.unpin') : $t('titlebar.pin')">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9.5 1.5l2 2-2.5 2.5-1.5-.5-2.5 2.5 1 3-3 3" />
-            <path d="M4 12l2.5-2.5M12.5 3.5l1.5 1.5" />
-          </svg>
+          {{ isPinned ? '📌' : '📍' }}
         </button>
         <div class="header-label-wrap" @click="showCategoryPicker = !showCategoryPicker">
           <svg class="header-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">

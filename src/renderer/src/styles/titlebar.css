@@ -9,12 +9,14 @@
   padding: 0 6px;
   flex-shrink: 0;
   backdrop-filter: blur(12px);
+  overflow: hidden;
 }
 
 .titlebar-left {
   display: flex;
   align-items: center;
   -webkit-app-region: no-drag;
+  padding-left: 2px;
 }
 
 .titlebar-title {

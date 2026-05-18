@@ -16,8 +16,8 @@
         <div class="theme-toggle">
           <button :class="{ active: settingsStore.theme === 'light' }" @click="settingsStore.setSetting('theme', 'light')">{{ $t('settings.light') }}</button>
           <button :class="{ active: settingsStore.theme === 'dark' }" @click="settingsStore.setSetting('theme', 'dark')">{{ $t('settings.dark') }}</button>
-          <button :class="{ active: settingsStore.theme === 'transparent-dark' }" @click="settingsStore.setSetting('theme', 'transparent-dark')">{{ $t('settings.transparentDark') }}</button>
           <button :class="{ active: settingsStore.theme === 'transparent-light' }" @click="settingsStore.setSetting('theme', 'transparent-light')">{{ $t('settings.transparentLight') }}</button>
+          <button :class="{ active: settingsStore.theme === 'transparent-dark' }" @click="settingsStore.setSetting('theme', 'transparent-dark')">{{ $t('settings.transparentDark') }}</button>
         </div>
       </div>
     </div>
