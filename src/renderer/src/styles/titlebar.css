@@ -1,0 +1,83 @@
+.titlebar {
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-titlebar);
+  border-bottom: 1px solid var(--border-secondary);
+  -webkit-app-region: drag;
+  padding: 0 6px;
+  flex-shrink: 0;
+  backdrop-filter: blur(12px);
+}
+
+.titlebar-left {
+  display: flex;
+  align-items: center;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-title {
+  font-size: var(--font-md);
+  color: var(--text-secondary);
+  font-weight: 700;
+  padding-left: 10px;
+  letter-spacing: 0.04em;
+}
+
+.titlebar-logo {
+  height: 65px;
+  width: auto;
+  margin-left: 1px;
+  -webkit-app-region: drag;
+}
+
+.pin-btn {
+  width: 34px !important;
+  opacity: 0.5;
+  font-size: 13px;
+}
+
+.pin-btn:hover {
+  opacity: 1;
+}
+
+.pin-btn.active {
+  opacity: 1;
+}
+
+.pin-icon {
+  line-height: 1;
+}
+
+.titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 38px;
+  height: var(--titlebar-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all var(--transition-fast);
+  border-radius: 0;
+}
+
+.titlebar-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.titlebar-btn.close:hover {
+  background: var(--danger);
+  color: white;
+}

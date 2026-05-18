@@ -1,0 +1,42 @@
+html.transparent-light {
+  --bg-primary: rgba(248, 249, 252, 0.5);
+  --bg-secondary: rgba(240, 242, 247, 0.5);
+  --bg-tertiary: rgba(228, 231, 238, 0.5);
+  --bg-sidebar: rgba(255, 255, 255, 0.5);
+  --bg-hover: rgba(59, 158, 255, 0.08);
+  --bg-active: rgba(59, 158, 255, 0.12);
+  --bg-card: rgba(255, 255, 255, 0.5);
+  --bg-editor: rgba(255, 255, 255, 0.5);
+  --bg-titlebar: rgba(255, 255, 255, 0.5);
+  --bg-input: rgba(245, 246, 250, 0.5);
+  --bg-overlay: rgba(15, 17, 23, 0.45);
+  --bg-glass: rgba(255, 255, 255, 0.65);
+
+  --text-primary: #111827;
+  --text-secondary: #5c6370;
+  --text-tertiary: #9ca3af;
+  --text-placeholder: #c4c9d4;
+  --text-inverse: #ffffff;
+
+  --border-primary: rgba(229, 232, 239, 0.6);
+  --border-secondary: rgba(240, 242, 245, 0.6);
+  --border-active: #3B9EFF;
+
+  --accent-primary: #3B9EFF;
+  --accent-hover: #2B8DF0;
+  --accent-light: rgba(59, 158, 255, 0.08);
+  --accent-glow: rgba(59, 158, 255, 0.25);
+
+  --danger: #EF4444;
+  --danger-light: rgba(239, 68, 68, 0.08);
+  --success: #22C55E;
+  --warning: #F59E0B;
+
+  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.04);
+  --shadow-md: 0 2px 8px rgba(15, 17, 23, 0.06), 0 0 1px rgba(15, 17, 23, 0.04);
+  --shadow-lg: 0 8px 24px rgba(15, 17, 23, 0.08), 0 0 1px rgba(15, 17, 23, 0.04);
+  --shadow-accent: 0 0 0 3px rgba(59, 158, 255, 0.15);
+  --shadow-card: 0 1px 3px rgba(15, 17, 23, 0.05), 0 0 0 1px rgba(15, 17, 23, 0.03);
+  --shadow-card-hover: 0 4px 12px rgba(59, 158, 255, 0.08), 0 0 0 1px rgba(59, 158, 255, 0.12);
+  --shadow-window: 0 8px 40px rgba(15, 17, 23, 0.1), 0 0 1px rgba(15, 17, 23, 0.05);
+}

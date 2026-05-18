@@ -1,0 +1,43 @@
+:root,
+html.light {
+  --bg-primary: #f8f9fc;
+  --bg-secondary: #f0f2f7;
+  --bg-tertiary: #e4e7ee;
+  --bg-sidebar: #ffffff;
+  --bg-hover: rgba(59, 158, 255, 0.06);
+  --bg-active: rgba(59, 158, 255, 0.1);
+  --bg-card: #ffffff;
+  --bg-editor: #ffffff;
+  --bg-titlebar: #ffffff;
+  --bg-input: #f5f6fa;
+  --bg-overlay: rgba(15, 17, 23, 0.45);
+  --bg-glass: rgba(255, 255, 255, 0.72);
+
+  --text-primary: #111827;
+  --text-secondary: #5c6370;
+  --text-tertiary: #9ca3af;
+  --text-placeholder: #c4c9d4;
+  --text-inverse: #ffffff;
+
+  --border-primary: #e5e8ef;
+  --border-secondary: #f0f2f5;
+  --border-active: #3B9EFF;
+
+  --accent-primary: #3B9EFF;
+  --accent-hover: #2B8DF0;
+  --accent-light: rgba(59, 158, 255, 0.08);
+  --accent-glow: rgba(59, 158, 255, 0.25);
+
+  --danger: #EF4444;
+  --danger-light: rgba(239, 68, 68, 0.08);
+  --success: #22C55E;
+  --warning: #F59E0B;
+
+  --shadow-sm: 0 1px 2px rgba(15, 17, 23, 0.04);
+  --shadow-md: 0 2px 8px rgba(15, 17, 23, 0.06), 0 0 1px rgba(15, 17, 23, 0.04);
+  --shadow-lg: 0 8px 24px rgba(15, 17, 23, 0.08), 0 0 1px rgba(15, 17, 23, 0.04);
+  --shadow-accent: 0 0 0 3px rgba(59, 158, 255, 0.15);
+  --shadow-card: 0 1px 3px rgba(15, 17, 23, 0.05), 0 0 0 1px rgba(15, 17, 23, 0.03);
+  --shadow-card-hover: 0 4px 12px rgba(59, 158, 255, 0.08), 0 0 0 1px rgba(59, 158, 255, 0.12);
+  --shadow-window: 0 8px 40px rgba(15, 17, 23, 0.12), 0 0 1px rgba(15, 17, 23, 0.06);
+}

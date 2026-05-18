@@ -1,0 +1,41 @@
+html.dark {
+  --bg-primary: #0f1117;
+  --bg-secondary: #161822;
+  --bg-tertiary: #1e2030;
+  --bg-sidebar: #12141d;
+  --bg-hover: rgba(59, 158, 255, 0.08);
+  --bg-active: rgba(59, 158, 255, 0.14);
+  --bg-card: #181a26;
+  --bg-editor: #14161f;
+  --bg-titlebar: #12141d;
+  --bg-input: #1e2030;
+  --bg-overlay: rgba(0, 0, 0, 0.6);
+  --bg-glass: rgba(18, 20, 29, 0.78);
+
+  --text-primary: #e8ecf4;
+  --text-secondary: #8b92a5;
+  --text-tertiary: #555d73;
+  --text-placeholder: #3a4155;
+  --text-inverse: #0f1117;
+
+  --border-primary: #262a3a;
+  --border-secondary: #1e2030;
+  --border-active: #3B9EFF;
+
+  --accent-primary: #3B9EFF;
+  --accent-hover: #5BB3FF;
+  --accent-light: rgba(59, 158, 255, 0.1);
+  --accent-glow: rgba(59, 158, 255, 0.3);
+
+  --danger: #F87171;
+  --danger-light: rgba(248, 113, 113, 0.1);
+  --success: #4ADE80;
+  --warning: #FBBF24;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(59, 158, 255, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 1px rgba(59, 158, 255, 0.08);
+  --shadow-accent: 0 0 0 3px rgba(59, 158, 255, 0.2);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(59, 158, 255, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(59, 158, 255, 0.12), 0 0 0 1px rgba(59, 158, 255, 0.18);
+}

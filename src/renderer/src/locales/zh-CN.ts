@@ -1,0 +1,284 @@
+export default {
+  common: {
+    confirm: '确认',
+    cancel: '取消',
+    delete: '删除',
+    save: '保存',
+    edit: '编辑',
+    close: '关闭',
+    restore: '恢复',
+    loading: '加载中...',
+    noData: '暂无数据'
+  },
+
+  nav: {
+    inbox: '收集箱',
+    today: '今天',
+    recent: '最近',
+    completed: '已完成',
+    calendar: '日历',
+    notes: '笔记',
+    statistics: '统计',
+    widget: '待办组件',
+    trash: '回收站',
+    categories: '分类',
+    settings: '设置',
+    newCategory: '新建分类'
+  },
+
+  inbox: {
+    planned: '常驻任务',
+    ready: '定时任务'
+  },
+
+  task: {
+    emptyInbox: '收集箱是空的',
+    emptyInboxSub: '将想法快速记录在这里',
+    emptyToday: '今天没有待办',
+    emptyTodaySub: '好好享受今天吧',
+    emptyRecent: '暂无最近任务',
+    emptyCompleted: '暂无已完成的任务',
+    emptyTrash: '回收站是空的',
+    emptyCategory: '该分类下暂无任务',
+    emptyCategorySub: '点击下方输入框添加任务',
+    addInbox: '添加任务到收集箱...',
+    addToday: '添加今日任务...',
+    addRecent: '快速添加任务...',
+    addCategory: '添加任务到{name}...',
+    deleteTask: '删除任务',
+    delete: '删除',
+    createdAt: '创建时间',
+    editTask: '编辑任务',
+    edit: '编辑',
+    addTask: '新增任务',
+    add: '新增',
+    titlePlaceholder: '任务标题',
+    descLabel: '描述',
+    descPlaceholder: '添加描述...',
+    reminderLabel: '提醒时间',
+    reminderPlaceholder: '选择日期时间',
+    categoryLabel: '分类',
+    noCategory: '无分类',
+    priorityLabel: '优先级',
+    tagLabel: '标签',
+    tagPlaceholder: '输入标签后回车',
+    subtaskLabel: '子任务',
+    subtaskPlaceholder: '添加子任务后回车，Tab 缩进',
+    attachmentLabel: '附件',
+    overdue: '已逾期',
+    tomorrow: '明天',
+    upcoming: '即将到来',
+    noDueDate: '无截止日期',
+    selected: '已选 {count} 项',
+    markComplete: '标记完成',
+    permanentDelete: '永久删除',
+    clearTrash: '清空回收站',
+    clearCompleted: '全部清除',
+    priorityNone: '无',
+    priorityDaily: '日常',
+    priorityImportant: '重要',
+    priorityUrgent: '紧急'
+  },
+
+  search: {
+    title: '搜索',
+    placeholder: '输入关键词、拼音搜索任务...',
+    noResult: '未找到匹配的任务',
+    resultCount: '找到 {count} 个结果'
+  },
+
+  calendar: {
+    today: '今天',
+    monthTitle: '{year}年{month}月',
+    dayTasks: '{date}的任务',
+    noTasks: '该日期没有任务',
+    weekDays: ['一', '二', '三', '四', '五', '六', '日']
+  },
+
+  statistics: {
+    title: '数据统计',
+    taskTab: '任务统计',
+    tomatoTab: '番茄统计',
+    completionTrend: '完成趋势',
+    creationTrend: '新增趋势',
+    completionRate: '完成率',
+    categoryDistribution: '分类分布',
+    priorityDistribution: '优先级分布',
+    overdue: '逾期任务',
+    overdueCount: '{count} 个任务已逾期',
+    weekComparison: '周对比',
+    cumulativeCompletion: '累计完成',
+    completed: '已完成',
+    uncompleted: '未完成',
+    lastWeek: '上周',
+    thisWeek: '本周',
+    todayTomato: '今日番茄',
+    tomatoUnit: '个番茄',
+    todayFocus: '今日专注',
+    minuteUnit: '分钟',
+    streak: '连续番茄',
+    dayUnit: '天',
+    trend30: '日趋势 (近30天)',
+    weekOverview: '周概览',
+    yearlyHeatmap: '年度热力图',
+    tomatoSeries: '番茄数'
+  },
+
+  tomato: {
+    title: '番茄钟',
+    focusLabel: '专注中',
+    shortBreakLabel: '短休息',
+    longBreakLabel: '长休息',
+    idleLabel: '就绪',
+    startFocus: '开始专注',
+    pause: '暂停',
+    resume: '继续',
+    skip: '跳过',
+    reset: '重置',
+    whiteNoise: '白噪音',
+    completed: '已完成 {count} 个番茄',
+    focus: '专注',
+    shortBreak: '短休',
+    longBreak: '长休',
+    focusMinute: '分钟',
+    stopAll: '全部停止'
+  },
+
+  settings: {
+    title: '设置',
+    general: '通用',
+    languageLabel: '语言',
+    themeLabel: '主题模式',
+    light: '浅色',
+    dark: '深色',
+    transparentDark: '透黑',
+    transparentLight: '透白',
+    shortcuts: '快捷键',
+    dataManagement: '数据管理',
+    soundSettings: '音效设置',
+    soundNew: '新增任务',
+    soundComplete: '完成任务',
+    soundRemove: '删除任务',
+    noSound: '无音效',
+    dataExport: '数据导出',
+    exporting: '导出中...',
+    exportJson: '导出为 JSON',
+    dataImport: '数据导入',
+    importing: '导入中...',
+    importJson: '导入 JSON 文件',
+    resetData: '重置应用数据',
+    resetting: '重置中...',
+    resetAll: '重置所有数据',
+    shortcutConflict: '快捷键「{keys}」与「{conflict}」冲突，请重新设置',
+    exportSuccess: '数据导出成功',
+    importConfirm: '导入将替换当前所有数据，确定继续？',
+    importSuccess: '数据导入成功',
+    importFail: '导入失败：\n{errors}',
+    resetConfirm1: '确定要重置所有数据？此操作不可撤销！',
+    resetConfirm2: '再次确认：将删除所有任务、分类和设置，确定继续？',
+    resetSuccess: '数据已重置'
+  },
+
+  repeat: {
+    label: '重复',
+    enable: '启用',
+    mode: '模式',
+    daily: '每天',
+    weekday: '工作日',
+    weekly: '每周',
+    monthly: '每月',
+    monthlyLast: '每月最后一天',
+    yearly: '每年',
+    yearlyLunar: '每年（农历）',
+    interval: '间隔',
+    day: '天',
+    weekDay: '星期',
+    date: '日期',
+    lunarDate: '农历日期',
+    lunarDay: '农历日',
+    month: '月',
+    daySuffix: '日',
+    skipWeekends: '跳过周末',
+    weekDays: ['日', '一', '二', '三', '四', '五', '六'],
+    lunarMonths: ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '腊']
+  },
+
+  sort: {
+    label: '排序',
+    reminder: '按提醒时间',
+    createdDesc: '按创建时间（最新）',
+    createdAsc: '按创建时间（最早）',
+    priorityDesc: '按优先级（高→低）',
+    priorityAsc: '按优先级（低→高）',
+    dueDate: '按截止日期',
+    complete: '按完成状态',
+    custom: '自定义排序'
+  },
+
+  attachment: {
+    paste: '粘贴',
+    pasteTitle: '粘贴图片 (Ctrl+V)',
+    upload: '上传',
+    limitReached: '附件数量已达上限 (20 个)'
+  },
+
+  category: {
+    label: '分类',
+    editTitle: '编辑分类',
+    newTitle: '新建分类',
+    name: '名称',
+    namePlaceholder: '分类名称',
+    color: '颜色',
+    icon: '图标',
+    deleteConfirm: '确定删除分类「{name}」？该分类下的任务将移至收集箱。'
+  },
+
+  titlebar: {
+    minimize: '最小化',
+    maximize: '最大化',
+    close: '关闭',
+    pin: '置顶窗口',
+    unpin: '取消置顶'
+  },
+
+  shortcut: {
+    newTask: '新建任务',
+    search: '搜索',
+    tomato: '开始/暂停番茄钟',
+    theme: '切换主题',
+    hideWindow: '显示/隐藏窗口',
+    recording: '按下快捷键...',
+    resetDefault: '恢复默认',
+    conflict: '与「{name}」冲突'
+  },
+
+  date: {
+    today: '今天',
+    tomorrow: '明天',
+    yesterday: '昨天',
+    dateFormat: '{m}月{d}日',
+    dateTimeFormat: '{m}月{d}日 {time}'
+  },
+
+  notes: {
+    title: '笔记',
+    focusMode: '专注模式',
+    exitFocus: '退出专注',
+    font: '字体',
+    fontSize: '字号',
+    bold: '加粗',
+    italic: '斜体',
+    strikethrough: '删除线',
+    fontColor: '字体颜色',
+    placeholder: '开始记录...'
+  },
+
+  widget: {
+    alwaysOnTop: '始终置顶',
+    opacity: '透明度',
+    createTodo: '新建待办小组件',
+    createCalendar: '新建日历小组件',
+    manage: '小组件管理',
+    remove: '删除'
+  }
+}

@@ -1,0 +1,284 @@
+export default {
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    save: 'Save',
+    edit: 'Edit',
+    close: 'Close',
+    restore: 'Restore',
+    loading: 'Loading...',
+    noData: 'No data'
+  },
+
+  nav: {
+    inbox: 'Inbox',
+    today: 'Today',
+    recent: 'Recent',
+    completed: 'Completed',
+    calendar: 'Calendar',
+    notes: 'Notes',
+    statistics: 'Statistics',
+    widget: 'Todo Widget',
+    trash: 'Trash',
+    categories: 'Categories',
+    settings: 'Settings',
+    newCategory: 'New Category'
+  },
+
+  inbox: {
+    planned: 'Permanent',
+    ready: 'Scheduled'
+  },
+
+  task: {
+    emptyInbox: 'Inbox is empty',
+    emptyInboxSub: 'Quickly capture your ideas here',
+    emptyToday: 'No tasks for today',
+    emptyTodaySub: 'Enjoy your day!',
+    emptyRecent: 'No recent tasks',
+    emptyCompleted: 'No completed tasks',
+    emptyTrash: 'Trash is empty',
+    emptyCategory: 'No tasks in this category',
+    emptyCategorySub: 'Add a task using the input below',
+    addInbox: 'Add task to inbox...',
+    addToday: 'Add task for today...',
+    addRecent: 'Quick add task...',
+    addCategory: 'Add task to {name}...',
+    deleteTask: 'Delete Task',
+    delete: 'Delete',
+    createdAt: 'Created At',
+    editTask: 'Edit Task',
+    edit: 'Edit',
+    addTask: 'Add Task',
+    add: 'Add',
+    titlePlaceholder: 'Task title',
+    descLabel: 'Description',
+    descPlaceholder: 'Add description...',
+    reminderLabel: 'Reminder',
+    reminderPlaceholder: 'Select date & time',
+    categoryLabel: 'Category',
+    noCategory: 'No Category',
+    priorityLabel: 'Priority',
+    tagLabel: 'Tags',
+    tagPlaceholder: 'Type tag and press Enter',
+    subtaskLabel: 'Subtasks',
+    subtaskPlaceholder: 'Add subtask, Tab to indent',
+    attachmentLabel: 'Attachments',
+    overdue: 'Overdue',
+    tomorrow: 'Tomorrow',
+    upcoming: 'Upcoming',
+    noDueDate: 'No due date',
+    selected: '{count} selected',
+    markComplete: 'Complete',
+    permanentDelete: 'Delete Permanently',
+    clearTrash: 'Empty Trash',
+    clearCompleted: 'Clear All',
+    priorityNone: 'None',
+    priorityDaily: 'Normal',
+    priorityImportant: 'Important',
+    priorityUrgent: 'Urgent'
+  },
+
+  search: {
+    title: 'Search',
+    placeholder: 'Search by keyword or pinyin...',
+    noResult: 'No matching tasks found',
+    resultCount: '{count} results found'
+  },
+
+  calendar: {
+    today: 'Today',
+    monthTitle: '{month}/{year}',
+    dayTasks: 'Tasks for {date}',
+    noTasks: 'No tasks for this date',
+    weekDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
+
+  statistics: {
+    title: 'Statistics',
+    taskTab: 'Tasks',
+    tomatoTab: 'Pomodoro',
+    completionTrend: 'Completion Trend',
+    creationTrend: 'Creation Trend',
+    completionRate: 'Completion Rate',
+    categoryDistribution: 'Category Distribution',
+    priorityDistribution: 'Priority Distribution',
+    overdue: 'Overdue Tasks',
+    overdueCount: '{count} tasks overdue',
+    weekComparison: 'Week Comparison',
+    cumulativeCompletion: 'Cumulative Completion',
+    completed: 'Completed',
+    uncompleted: 'Uncompleted',
+    lastWeek: 'Last Week',
+    thisWeek: 'This Week',
+    todayTomato: 'Today\'s Pomodoros',
+    tomatoUnit: 'pomodoros',
+    todayFocus: 'Today\'s Focus',
+    minuteUnit: 'minutes',
+    streak: 'Pomodoro Streak',
+    dayUnit: 'days',
+    trend30: 'Daily Trend (30 days)',
+    weekOverview: 'Weekly Overview',
+    yearlyHeatmap: 'Yearly Heatmap',
+    tomatoSeries: 'Pomodoros'
+  },
+
+  tomato: {
+    title: 'Pomodoro',
+    focusLabel: 'Focusing',
+    shortBreakLabel: 'Short Break',
+    longBreakLabel: 'Long Break',
+    idleLabel: 'Ready',
+    startFocus: 'Start Focus',
+    pause: 'Pause',
+    resume: 'Resume',
+    skip: 'Skip',
+    reset: 'Reset',
+    whiteNoise: 'White Noise',
+    completed: '{count} pomodoros completed',
+    focus: 'Focus',
+    shortBreak: 'Short',
+    longBreak: 'Long',
+    focusMinute: 'min',
+    stopAll: 'Stop All'
+  },
+
+  settings: {
+    title: 'Settings',
+    general: 'General',
+    languageLabel: 'Language',
+    themeLabel: 'Theme',
+    light: 'Light',
+    dark: 'Dark',
+    transparentDark: 'Glass Dark',
+    transparentLight: 'Glass Light',
+    shortcuts: 'Shortcuts',
+    dataManagement: 'Data Management',
+    soundSettings: 'Sound Effects',
+    soundNew: 'New Task',
+    soundComplete: 'Complete Task',
+    soundRemove: 'Delete Task',
+    noSound: 'No Sound',
+    dataExport: 'Export Data',
+    exporting: 'Exporting...',
+    exportJson: 'Export as JSON',
+    dataImport: 'Import Data',
+    importing: 'Importing...',
+    importJson: 'Import JSON File',
+    resetData: 'Reset App Data',
+    resetting: 'Resetting...',
+    resetAll: 'Reset All Data',
+    shortcutConflict: 'Shortcut "{keys}" conflicts with "{conflict}"',
+    exportSuccess: 'Data exported successfully',
+    importConfirm: 'Import will replace all current data. Continue?',
+    importSuccess: 'Data imported successfully',
+    importFail: 'Import failed:\n{errors}',
+    resetConfirm1: 'Are you sure you want to reset all data? This cannot be undone!',
+    resetConfirm2: 'Confirm again: All tasks, categories, and settings will be deleted. Continue?',
+    resetSuccess: 'Data has been reset'
+  },
+
+  repeat: {
+    label: 'Repeat',
+    enable: 'Enable',
+    mode: 'Mode',
+    daily: 'Daily',
+    weekday: 'Weekdays',
+    weekly: 'Weekly',
+    monthly: 'Monthly',
+    monthlyLast: 'Last Day of Month',
+    yearly: 'Yearly',
+    yearlyLunar: 'Yearly (Lunar)',
+    interval: 'Interval',
+    day: 'days',
+    weekDay: 'Weekday',
+    date: 'Date',
+    lunarDate: 'Lunar Date',
+    lunarDay: 'Lunar Day',
+    month: '/',
+    daySuffix: '',
+    skipWeekends: 'Skip Weekends',
+    weekDays: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    lunarMonths: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th']
+  },
+
+  sort: {
+    label: 'Sort',
+    reminder: 'By Reminder',
+    createdDesc: 'By Created (Newest)',
+    createdAsc: 'By Created (Oldest)',
+    priorityDesc: 'By Priority (High→Low)',
+    priorityAsc: 'By Priority (Low→High)',
+    dueDate: 'By Due Date',
+    complete: 'By Status',
+    custom: 'Custom'
+  },
+
+  attachment: {
+    paste: 'Paste',
+    pasteTitle: 'Paste Image (Ctrl+V)',
+    upload: 'Upload',
+    limitReached: 'Attachment limit reached (20 max)'
+  },
+
+  category: {
+    label: 'Category',
+    editTitle: 'Edit Category',
+    newTitle: 'New Category',
+    name: 'Name',
+    namePlaceholder: 'Category name',
+    color: 'Color',
+    icon: 'Icon',
+    deleteConfirm: 'Delete category "{name}"? Tasks will be moved to Inbox.'
+  },
+
+  titlebar: {
+    minimize: 'Minimize',
+    maximize: 'Maximize',
+    close: 'Close',
+    pin: 'Pin to Top',
+    unpin: 'Unpin'
+  },
+
+  shortcut: {
+    newTask: 'New Task',
+    search: 'Search',
+    tomato: 'Start/Pause Pomodoro',
+    theme: 'Toggle Theme',
+    hideWindow: 'Show/Hide Window',
+    recording: 'Press shortcut...',
+    resetDefault: 'Reset Default',
+    conflict: 'Conflicts with "{name}"'
+  },
+
+  date: {
+    today: 'Today',
+    tomorrow: 'Tomorrow',
+    yesterday: 'Yesterday',
+    dateFormat: '{m}/{d}',
+    dateTimeFormat: '{m}/{d} {time}'
+  },
+
+  notes: {
+    title: 'Notes',
+    focusMode: 'Focus Mode',
+    exitFocus: 'Exit Focus',
+    font: 'Font',
+    fontSize: 'Size',
+    bold: 'Bold',
+    italic: 'Italic',
+    strikethrough: 'Strikethrough',
+    fontColor: 'Font Color',
+    placeholder: 'Start writing...'
+  },
+
+  widget: {
+    alwaysOnTop: 'Always on Top',
+    opacity: 'Opacity',
+    createTodo: 'New Todo Widget',
+    createCalendar: 'New Calendar Widget',
+    manage: 'Widget Manager',
+    remove: 'Remove'
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "outDir": "./out/renderer",
+    "paths": {
+      "@/*": ["./src/renderer/src/*"]
+    },
+    "resolveJsonModule": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": []
+  },
+  "include": ["src/renderer/src/**/*", "src/renderer/index.html", "src/preload/*.d.ts"]
+}
