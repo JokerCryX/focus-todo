@@ -80,6 +80,7 @@ onMounted(async () => {
   window.api.on('task:changed', onTaskChanged)
   window.api.on('popup:opened', onPopupOpened)
   window.api.on('popup:closed', onPopupClosed)
+  window.api.on('theme:changed', onThemeChanged)
 })
 
 onUnmounted(() => {
@@ -87,7 +88,14 @@ onUnmounted(() => {
   window.api.removeListener?.('task:changed', onTaskChanged)
   window.api.removeListener?.('popup:opened', onPopupOpened)
   window.api.removeListener?.('popup:closed', onPopupClosed)
+  window.api.removeListener?.('theme:changed', onThemeChanged)
 })
+
+function onThemeChanged(theme?: string) {
+  if (theme && settingsStore.theme !== theme) {
+    settingsStore.setSetting('theme', theme)
+  }
+}
 
 function onMainClick(e: MouseEvent) {
   if (!uiStore.editorVisible) return

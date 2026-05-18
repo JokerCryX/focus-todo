@@ -2,7 +2,6 @@
   <div class="view-page">
     <div class="view-header">
       <h2>{{ $t('nav.inbox') }}</h2>
-      <SortSelector v-model="sortBy" />
     </div>
     <TaskQuickAdd :placeholder="$t('task.addInbox')" no-editor />
     <div class="inbox-list" v-if="taskStore.tasks.length > 0">
@@ -12,8 +11,18 @@
           {{ $t('inbox.planned') }} ({{ plannedTasks.length }})
         </div>
         <Transition name="collapse">
-          <div v-show="plannedOpen">
-            <TaskCard v-for="task in plannedTasks" :key="task.task_id" :task="task" />
+          <div v-show="plannedOpen" class="drag-list" @dragover.prevent @drop="onDropPlanned">
+            <div
+              v-for="(task, index) in plannedTasks"
+              :key="task.task_id"
+              draggable="true"
+              @dragstart="onDragStart($event, index, 'planned')"
+              @dragover="onDragOver($event, index, 'planned')"
+              @dragend="onDragEnd"
+              :class="{ 'drag-over': dragOverIndex === index && dragSource === 'planned' }"
+            >
+              <TaskCard :task="task" />
+            </div>
           </div>
         </Transition>
       </div>
@@ -34,39 +43,69 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useTaskStore } from '@/stores/task'
-import { useSettingsStore } from '@/stores/settings'
 import TaskCard from '@/components/task/TaskCard.vue'
 import TaskQuickAdd from '@/components/task/TaskQuickAdd.vue'
-import SortSelector from '@/components/task/SortSelector.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const taskStore = useTaskStore()
-const settingsStore = useSettingsStore()
-const sortBy = ref(settingsStore.defaultSort)
 
 const plannedOpen = ref(true)
 const readyOpen = ref(true)
+
+const dragSource = ref<'planned' | null>(null)
+const dragIndex = ref(-1)
+const dragOverIndex = ref(-1)
 
 const plannedTasks = computed(() =>
   taskStore.tasks.filter(t => !t.due_date)
 )
 
 const readyTasks = computed(() =>
-  taskStore.tasks.filter(t => !!t.due_date)
+  taskStore.tasks.filter(t => !!t.due_date).sort((a, b) => a.due_date! - b.due_date!)
 )
 
 function loadTasks() {
-  taskStore.fetchTasks({ view: 'inbox', sort_by: sortBy.value })
+  taskStore.fetchTasks({ view: 'inbox', sort_by: 'custom' })
 }
 
-watch(sortBy, (val) => {
-  settingsStore.setDefaultSort(val)
-  loadTasks()
-})
-
 onMounted(loadTasks)
+
+function onDragStart(e: DragEvent, index: number, source: 'planned') {
+  dragSource.value = source
+  dragIndex.value = index
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+}
+
+function onDragOver(e: DragEvent, index: number, source: 'planned') {
+  if (dragSource.value !== source) return
+  e.preventDefault()
+  dragOverIndex.value = index
+}
+
+function onDragEnd() {
+  dragSource.value = null
+  dragIndex.value = -1
+  dragOverIndex.value = -1
+}
+
+async function onDropPlanned() {
+  if (dragSource.value !== 'planned' || dragIndex.value === dragOverIndex.value) {
+    onDragEnd()
+    return
+  }
+  const tasks = [...plannedTasks.value]
+  const [moved] = tasks.splice(dragIndex.value, 1)
+  tasks.splice(dragOverIndex.value, 0, moved)
+  for (let i = 0; i < tasks.length; i++) {
+    if (tasks[i].sort_order !== i) {
+      await taskStore.updateTask({ task_id: tasks[i].task_id, sort_order: i })
+    }
+  }
+  onDragEnd()
+  loadTasks()
+}
 </script>
 
 <style scoped>
@@ -140,5 +179,14 @@ onMounted(loadTasks)
 .collapse-enter-from,
 .collapse-leave-to {
   opacity: 0;
+}
+
+.drag-list > [draggable="true"] {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.drag-list > [draggable="true"].drag-over {
+  border-top: 2px solid var(--accent-primary);
+  padding-top: 6px;
 }
 </style>

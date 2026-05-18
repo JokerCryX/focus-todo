@@ -59,6 +59,13 @@
           <option v-for="s in soundFiles" :key="s.file" :value="s.file">{{ s.name }}</option>
         </select>
       </div>
+      <div class="setting-item">
+        <span>{{ $t('settings.soundReminder') }}</span>
+        <select class="setting-select" v-model="soundReminder" @change="saveSound('sound_reminder', soundReminder)">
+          <option value="">{{ $t('settings.noSound') }}</option>
+          <option v-for="s in soundFiles" :key="s.file" :value="s.file">{{ s.name }}</option>
+        </select>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -112,12 +119,14 @@ const soundFiles = ref<{ name: string; file: string }[]>([])
 const soundNew = ref('')
 const soundComplete = ref('')
 const soundRemove = ref('')
+const soundReminder = ref('')
 
 async function loadSoundSettings() {
   soundFiles.value = await window.api.sound.list()
   soundNew.value = (await window.api.settings.get('sound_new')) || ''
   soundComplete.value = (await window.api.settings.get('sound_complete')) || ''
   soundRemove.value = (await window.api.settings.get('sound_remove')) || ''
+  soundReminder.value = (await window.api.settings.get('sound_reminder')) || ''
 }
 
 function saveSound(key: string, value: string) {

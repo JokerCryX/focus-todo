@@ -14,7 +14,7 @@ export default {
   nav: {
     inbox: '收集箱',
     today: '今天',
-    recent: '最近',
+    recent: '近期',
     completed: '已完成',
     calendar: '日历',
     notes: '笔记',
@@ -159,6 +159,7 @@ export default {
     soundNew: '新增任务',
     soundComplete: '完成任务',
     soundRemove: '删除任务',
+    soundReminder: '提醒',
     noSound: '无音效',
     dataExport: '数据导出',
     exporting: '导出中...',

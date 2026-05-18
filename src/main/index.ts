@@ -3,7 +3,7 @@ import { join } from 'path'
 import { getDatabase, closeDatabase } from './database'
 import { runMigrations } from './database/migrations'
 import { registerAllIPC } from './ipc'
-import { createTray, setWidgetDao } from './tray'
+import { createTray, setWidgetDao, createAppIcon } from './tray'
 import { initWidgetManager, restoreAllWidgets } from './widget-manager'
 import { WidgetDao } from './database/widget.dao'
 import { SettingsDao } from './database/settings.dao'
@@ -39,6 +39,7 @@ if (!gotTheLock) {
       show: false,
       frame: false,
       transparent: true,
+      icon: createAppIcon(),
       webPreferences: getWebPreferences()
     })
 

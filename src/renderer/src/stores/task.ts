@@ -12,8 +12,11 @@ export const useTaskStore = defineStore('task', () => {
   const fallbackKeys = new Set<string>()
   let audioCtx: AudioContext | null = null
 
+  const remindedIds = new Set<string>()
+  let reminderTimer: ReturnType<typeof setInterval> | null = null
+
   async function loadSoundCache() {
-    const keys = ['sound_new', 'sound_complete', 'sound_remove']
+    const keys = ['sound_new', 'sound_complete', 'sound_remove', 'sound_reminder']
     const results = await Promise.all(keys.map(k => window.api.settings.get(k)))
     const entries: [string, string][] = []
     keys.forEach((k, i) => {
@@ -53,6 +56,31 @@ export const useTaskStore = defineStore('task', () => {
   }
 
   loadSoundCache()
+
+  function checkReminders() {
+    const now = Date.now()
+    const cutoff = now - 60000
+    for (const t of tasks.value) {
+      if (t.complete || !t.due_date) continue
+      if (t.due_date > now || t.due_date <= cutoff) continue
+      if (remindedIds.has(t.task_id)) continue
+      remindedIds.add(t.task_id)
+      playSound('sound_reminder')
+    }
+    // 清理已不存在或已完成的任务
+    const activeIds = new Set(tasks.value.filter(t => !t.complete).map(t => t.task_id))
+    for (const id of remindedIds) {
+      if (!activeIds.has(id)) remindedIds.delete(id)
+    }
+  }
+
+  function startReminderCheck() {
+    if (reminderTimer) return
+    checkReminders()
+    reminderTimer = setInterval(checkReminders, 30000)
+  }
+
+  startReminderCheck()
 
   async function fetchTasks(filter?: Partial<TaskFilter>) {
     loading.value = true

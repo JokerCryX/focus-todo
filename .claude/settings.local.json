@@ -45,7 +45,9 @@
       "Bash(powershell -NoProfile -Command ' *)",
       "Bash(ffmpeg -version)",
       "Bash(ffmpeg -y -i \"删除.wav\" -acodec pcm_s16le -ar 44100 -ac 2 \"删除_tmp.wav\")",
-      "Bash(mv \"删除_tmp.wav\" \"删除.wav\")"
+      "Bash(mv \"删除_tmp.wav\" \"删除.wav\")",
+      "Bash(ls \"C:/Program Files \\(x86\\)/jingyeqian/\")",
+      "Read(//c/Program Files \\(x86\\)/jingyeqian/**)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Administrator\\.claude"

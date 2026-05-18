@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { WidgetDao } from '../database/widget.dao'
-import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, isWidgetOpen, broadcastToWidgets } from '../widget-manager'
+import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, isWidgetOpen, broadcastToWidgets, expandWidgetBySender, collapseWidgetBySender } from '../widget-manager'
 
 export function registerWidgetIPC(dao: WidgetDao): void {
   ipcMain.handle('widget:list', () => {
@@ -62,7 +62,16 @@ export function registerWidgetIPC(dao: WidgetDao): void {
     }
   })
 
-  ipcMain.on('theme:changed', () => {
-    broadcastToWidgets('theme:changed')
+  ipcMain.on('theme:changed', (_e, theme?: string) => {
+    broadcastToWidgets('theme:changed', theme)
+    sendToMainWindow('theme:changed', theme)
+  })
+
+  ipcMain.handle('widget:expand', (e) => {
+    expandWidgetBySender(e.sender)
+  })
+
+  ipcMain.handle('widget:collapse', (e) => {
+    collapseWidgetBySender(e.sender)
   })
 }

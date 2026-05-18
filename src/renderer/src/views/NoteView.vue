@@ -8,10 +8,10 @@
           <svg v-else width="14" height="14" viewBox="0 0 16 16"><path d="M1 1.5V5h1.5V2.5H5V1H1.5zm10 0V1h3.5v3.5H13.5V2.5H11zM1 11v3.5H5V13H2.5V11H1zm11 0v2H10v1.5h3.5V11H12z" fill="currentColor"/></svg>
         </button>
         <div class="toolbar-separator" />
-        <select v-model="currentFont" @change="applyFont" class="toolbar-select" :title="$t('notes.font')">
+        <select v-model="currentFont" @change="applyFont" @wheel.prevent="onFontWheel" class="toolbar-select" :title="$t('notes.font')">
           <option v-for="f in fonts" :key="f.value" :value="f.value">{{ f.label }}</option>
         </select>
-        <select v-model="currentSize" @change="applyFontSize" class="toolbar-select size-select" :title="$t('notes.fontSize')">
+        <select v-model="currentSize" @change="applyFontSize" @wheel.prevent="onSizeWheel" class="toolbar-select size-select" :title="$t('notes.fontSize')">
           <option v-for="s in sizes" :key="s" :value="s">{{ s }}px</option>
         </select>
         <div class="toolbar-separator" />
@@ -70,10 +70,10 @@ const fonts = [
   { label: 'Courier New', value: '"Courier New", monospace' }
 ]
 
-const sizes = [13, 14, 15, 16, 18, 20, 22, 24, 28, 32]
+const sizes = [12, 13, 14, 15, 16, 18, 20]
 
 const currentFont = ref(localStorage.getItem(FONT_KEY) || 'inherit')
-const currentSize = ref(Number(localStorage.getItem(SIZE_KEY)) || 16)
+const currentSize = ref(Number(localStorage.getItem(SIZE_KEY)) || 12)
 const isBold = ref(false)
 const isItalic = ref(false)
 const isStrike = ref(false)
@@ -97,13 +97,28 @@ function applyFontSize() {
   document.execCommand('fontSize', false, '7')
   const fontElements = editorRef.value?.querySelectorAll('font[size="7"]')
   fontElements?.forEach(el => {
-    const span = document.createElement('span')
-    span.style.fontSize = currentSize.value + 'px'
-    span.innerHTML = el.innerHTML
-    el.replaceWith(span)
+    ;(el as HTMLElement).style.fontSize = currentSize.value + 'px'
+    el.removeAttribute('size')
   })
   localStorage.setItem(SIZE_KEY, String(currentSize.value))
-  editorRef.value?.focus()
+}
+
+function onFontWheel(e: WheelEvent) {
+  const idx = fonts.findIndex(f => f.value === currentFont.value)
+  if (idx < 0) return
+  const next = e.deltaY < 0 ? Math.max(0, idx - 1) : Math.min(fonts.length - 1, idx + 1)
+  if (next === idx) return
+  currentFont.value = fonts[next].value
+  applyFont()
+}
+
+function onSizeWheel(e: WheelEvent) {
+  const idx = sizes.indexOf(currentSize.value)
+  if (idx < 0) return
+  const next = e.deltaY < 0 ? Math.max(0, idx - 1) : Math.min(sizes.length - 1, idx + 1)
+  if (next === idx) return
+  currentSize.value = sizes[next]
+  applyFontSize()
 }
 
 function updateActiveStates() {
@@ -391,7 +406,7 @@ onUnmounted(() => {
 .note-editor {
   padding: 0 28px 60px 56px;
   outline: none;
-  font-size: 16px;
+  font-size: 12px;
   line-height: 32px;
   color: var(--text-primary);
   word-wrap: break-word;

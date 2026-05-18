@@ -90,7 +90,9 @@ const api = {
     openTaskInMain: (taskId: string) => ipcRenderer.invoke('widget:openTaskInMain', taskId),
     getConfig: (id: string) => ipcRenderer.invoke('widget:getConfig', id),
     toggle: () => ipcRenderer.invoke('widget:toggle'),
-    isOpen: () => ipcRenderer.invoke('widget:isOpen')
+    isOpen: () => ipcRenderer.invoke('widget:isOpen'),
+    expand: () => ipcRenderer.invoke('widget:expand'),
+    collapse: () => ipcRenderer.invoke('widget:collapse')
   },
   sound: {
     list: () => ipcRenderer.invoke('sound:list'),

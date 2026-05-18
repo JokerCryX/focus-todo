@@ -7,7 +7,7 @@ let tray: Tray | null = null
 let widgetDao: WidgetDao | null = null
 let mainWindowRef: BrowserWindow | null = null
 
-function createAppIcon(): Electron.NativeImage {
+export function createAppIcon(): Electron.NativeImage {
   const S = 64
   const buf = Buffer.alloc(S * S * 4)
   const pad = 4, rr = 14
@@ -71,14 +71,6 @@ function buildMenu(): Menu {
       click: () => {
         mainWindowRef?.show()
         mainWindowRef?.focus()
-      }
-    },
-    { type: 'separator' },
-    {
-      label: t('tray.newTask'),
-      click: () => {
-        mainWindowRef?.show()
-        mainWindowRef?.webContents.send('action:new-task')
       }
     },
     { type: 'separator' }

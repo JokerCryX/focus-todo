@@ -1,7 +1,7 @@
 <template>
   <div
     class="task-card"
-    :class="{ completed: task.complete, overdue: isOverdue, [`priority-${task.priority}`]: true }"
+    :class="{ completed: task.complete, [`priority-${task.priority}`]: true }"
     @click="uiStore.openEditor(task)"
     @contextmenu.prevent="onContextMenu"
   >
@@ -13,7 +13,7 @@
       <div class="task-title">{{ task.title }}</div>
       <div v-if="task.description" class="task-desc">{{ task.description }}</div>
       <div class="task-meta">
-        <span v-if="task.due_date" class="meta-date" :class="{ overdue: isOverdue }">
+        <span v-if="task.due_date" class="meta-date" :class="{ today: isToday, future: isFuture }">
           <svg class="meta-clock" width="11" height="11" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
           {{ formatDate(task.due_date) }}
         </span>
@@ -49,6 +49,19 @@ const uiStore = useUIStore()
 const isOverdue = computed(() => {
   if (!props.task.due_date || props.task.complete) return false
   return props.task.due_date < Date.now()
+})
+
+const isToday = computed(() => {
+  if (!props.task.due_date) return false
+  const d = new Date(props.task.due_date)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()
+})
+
+const isFuture = computed(() => {
+  if (!props.task.due_date || props.task.complete) return false
+  if (isToday.value) return false
+  return props.task.due_date > Date.now()
 })
 
 const categoryInfo = computed(() => {
@@ -148,10 +161,6 @@ function onContextMenu(e: MouseEvent) {
   color: var(--text-tertiary);
 }
 
-.task-card.overdue .meta-date {
-  color: var(--danger);
-  font-weight: 500;
-}
 
 .task-left {
   padding-top: 3px;
@@ -202,8 +211,14 @@ function onContextMenu(e: MouseEvent) {
   flex-shrink: 0;
 }
 
-.meta-date.overdue {
-  color: var(--danger);
+.meta-date.today {
+  color: #F87171;
+  font-weight: 500;
+}
+
+.meta-date.future {
+  color: #34D399;
+  font-weight: 500;
 }
 
 .meta-tag {
@@ -296,5 +311,10 @@ function onContextMenu(e: MouseEvent) {
 .ctx-item.ctx-danger:hover {
   background: var(--danger);
   color: white;
+}
+
+html.dark .task-category-badge,
+html.transparent-dark .task-category-badge {
+  color: white !important;
 }
 </style>

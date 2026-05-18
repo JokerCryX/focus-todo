@@ -90,6 +90,62 @@ textarea::placeholder {
   font-size: var(--font-xs) !important;
 }
 
+/* 深色/透黑模式：分组标题提亮 */
+html.dark .group-header,
+html.transparent-dark .group-header {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+html.dark .group-header:hover,
+html.transparent-dark .group-header:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* 深色/透黑模式：编辑面板文字提亮 */
+html.dark .editor-panel,
+html.transparent-dark .editor-panel {
+  --text-tertiary: rgba(255, 255, 255, 0.7);
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-placeholder: rgba(255, 255, 255, 0.45);
+}
+
+/* 深色/透黑模式：快速添加输入框提亮 */
+html.dark .quick-add,
+html.transparent-dark .quick-add {
+  --text-secondary: rgba(255, 255, 255, 0.85);
+  --text-placeholder: rgba(255, 255, 255, 0.5);
+}
+
+/* 深色/透黑模式：任务描述提亮 */
+html.dark .task-desc,
+html.transparent-dark .task-desc {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* 透白模式：对应位置文字改黑 */
+html.transparent-light .group-header {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+html.transparent-light .group-header:hover {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+html.transparent-light .editor-panel {
+  --text-tertiary: rgba(0, 0, 0, 0.65);
+  --text-secondary: rgba(0, 0, 0, 0.75);
+  --text-placeholder: rgba(0, 0, 0, 0.4);
+}
+
+html.transparent-light .quick-add {
+  --text-secondary: rgba(0, 0, 0, 0.8);
+  --text-placeholder: rgba(0, 0, 0, 0.45);
+}
+
+html.transparent-light .task-desc {
+  color: rgba(0, 0, 0, 0.65) !important;
+}
+
 /* 全局动画 */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }

@@ -159,6 +159,7 @@ export default {
     soundNew: 'New Task',
     soundComplete: 'Complete Task',
     soundRemove: 'Delete Task',
+    soundReminder: 'Reminder',
     noSound: 'No Sound',
     dataExport: 'Export Data',
     exporting: 'Exporting...',
