@@ -59,6 +59,13 @@
       "target": "nsis",
       "icon": "build/icons/icon.ico"
     },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "installerIcon": "build/icons/icon.ico",
+      "uninstallerIcon": "build/icons/icon.ico"
+    },
     "mac": {
       "target": "dmg"
     },

@@ -838,4 +838,4 @@ CREATE INDEX IF NOT EXISTS idx_tomato_created ON tomato_records(created_at);
 
 ---
 
-*本文档基于 Todo清单（杭州乾夕科技）产品的功能分析，重新整理为纯本地版本的开发需求规格。所有功能均为原创设计描述，不涉及原产品代码复制。*
+
