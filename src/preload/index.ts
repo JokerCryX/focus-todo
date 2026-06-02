@@ -91,8 +91,8 @@ const api = {
     getConfig: (id: string) => ipcRenderer.invoke('widget:getConfig', id),
     toggle: () => ipcRenderer.invoke('widget:toggle'),
     isOpen: () => ipcRenderer.invoke('widget:isOpen'),
-    expand: () => ipcRenderer.invoke('widget:expand'),
-    collapse: () => ipcRenderer.invoke('widget:collapse')
+    startResize: (direction: string) => ipcRenderer.send('widget:startResize', direction),
+    stopResize: () => ipcRenderer.send('widget:stopResize')
   },
   sound: {
     list: () => ipcRenderer.invoke('sound:list'),

@@ -46,11 +46,6 @@ const taskStore = useTaskStore()
 const categoryStore = useCategoryStore()
 const uiStore = useUIStore()
 
-const isOverdue = computed(() => {
-  if (!props.task.due_date || props.task.complete) return false
-  return props.task.due_date < Date.now()
-})
-
 const isToday = computed(() => {
   if (!props.task.due_date) return false
   const d = new Date(props.task.due_date)
@@ -182,8 +177,7 @@ function onContextMenu(e: MouseEvent) {
 
 .task-desc {
   font-size: var(--font-sm);
-  color: var(--text-tertiary);
-  line-height: 1.4;
+  color: var(--desc-color);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -212,12 +206,12 @@ function onContextMenu(e: MouseEvent) {
 }
 
 .meta-date.today {
-  color: #F87171;
+  color: var(--color-time-today);
   font-weight: 500;
 }
 
 .meta-date.future {
-  color: #34D399;
+  color: var(--color-time-future);
   font-weight: 500;
 }
 

@@ -49,10 +49,15 @@
       {
         "from": "resources",
         "to": "resources"
+      },
+      {
+        "from": "build/icons",
+        "to": "icons"
       }
     ],
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "build/icons/icon.ico"
     },
     "mac": {
       "target": "dmg"

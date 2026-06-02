@@ -236,6 +236,9 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 18px;
+  line-height: 1;
+  transform: translateX(1px);
 }
 
 .timer-text {

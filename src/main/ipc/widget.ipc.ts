@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { WidgetDao } from '../database/widget.dao'
-import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, isWidgetOpen, broadcastToWidgets, expandWidgetBySender, collapseWidgetBySender } from '../widget-manager'
+import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, isWidgetOpen, broadcastToWidgets, findWidgetIdByWebContents, startWidgetResize, stopWidgetResize } from '../widget-manager'
 
 export function registerWidgetIPC(dao: WidgetDao): void {
   ipcMain.handle('widget:list', () => {
@@ -67,11 +67,13 @@ export function registerWidgetIPC(dao: WidgetDao): void {
     sendToMainWindow('theme:changed', theme)
   })
 
-  ipcMain.handle('widget:expand', (e) => {
-    expandWidgetBySender(e.sender)
+  ipcMain.on('widget:startResize', (e, direction: string) => {
+    const id = findWidgetIdByWebContents(e.sender)
+    if (id) startWidgetResize(id, direction)
   })
 
-  ipcMain.handle('widget:collapse', (e) => {
-    collapseWidgetBySender(e.sender)
+  ipcMain.on('widget:stopResize', (e) => {
+    const id = findWidgetIdByWebContents(e.sender)
+    if (id) stopWidgetResize(id)
   })
 }

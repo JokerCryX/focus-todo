@@ -113,7 +113,10 @@ function onMainClick(e: MouseEvent) {
   overflow: hidden;
   border-radius: 9px;
   background: var(--bg-primary);
-  box-shadow: var(--shadow-window, none);
+  box-shadow:
+    0 2px 6px rgba(15, 17, 23, 0.2),
+    0 6px 14px rgba(15, 17, 23, 0.2),
+    0 10px 22px rgba(15, 17, 23, 0.16);
   position: relative;
 }
 

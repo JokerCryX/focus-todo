@@ -95,14 +95,14 @@ async function onDropPlanned() {
     onDragEnd()
     return
   }
-  const tasks = [...plannedTasks.value]
-  const [moved] = tasks.splice(dragIndex.value, 1)
-  tasks.splice(dragOverIndex.value, 0, moved)
-  for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].sort_order !== i) {
-      await taskStore.updateTask({ task_id: tasks[i].task_id, sort_order: i })
-    }
+  const reordered = [...plannedTasks.value]
+  const [moved] = reordered.splice(dragIndex.value, 1)
+  reordered.splice(dragOverIndex.value, 0, moved)
+  const updates: Promise<any>[] = []
+  for (let i = 0; i < reordered.length; i++) {
+    updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
   }
+  await Promise.all(updates)
   onDragEnd()
   loadTasks()
 }

@@ -32,10 +32,10 @@ if (!gotTheLock) {
     registerAllIPC(db)
 
     mainWindow = new BrowserWindow({
-      width: 900,
-      height: 600,
-      minWidth: 800,
-      minHeight: 500,
+      width: 960,
+      height: 660,
+      minWidth: 860,
+      minHeight: 560,
       show: false,
       frame: false,
       transparent: true,

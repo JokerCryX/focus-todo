@@ -24,9 +24,14 @@ html, body {
   letter-spacing: 0.01em;
 }
 
-#app,
+#app {
+  height: 100%;
+  padding: 30px;
+}
+
 #widget-app {
   height: 100%;
+  padding: 30px;
 }
 
 input, textarea, select {
@@ -116,10 +121,12 @@ html.transparent-dark .quick-add {
   --text-placeholder: rgba(255, 255, 255, 0.5);
 }
 
-/* 深色/透黑模式：任务描述提亮 */
-html.dark .task-desc,
-html.transparent-dark .task-desc {
-  color: rgba(255, 255, 255, 0.7) !important;
+/* 深色/透黑模式：任务卡片/组件描述提亮 */
+html.dark .task-card,
+html.transparent-dark .task-card,
+html.dark .task-item,
+html.transparent-dark .task-item {
+  --desc-color: rgba(255, 255, 255, 0.7);
 }
 
 /* 透白模式：对应位置文字改黑 */
@@ -142,8 +149,9 @@ html.transparent-light .quick-add {
   --text-placeholder: rgba(0, 0, 0, 0.45);
 }
 
-html.transparent-light .task-desc {
-  color: rgba(0, 0, 0, 0.65) !important;
+html.transparent-light .task-card,
+html.transparent-light .task-item {
+  --desc-color: rgba(0, 0, 0, 0.65);
 }
 
 /* 全局动画 */

@@ -77,6 +77,16 @@
 
     <!-- Task list -->
     <div class="task-scroll">
+
+      <!-- Resize handles -->
+      <div class="resize-handle resize-n" @mousedown="startResize('n', $event)"></div>
+      <div class="resize-handle resize-s" @mousedown="startResize('s', $event)"></div>
+      <div class="resize-handle resize-e" @mousedown="startResize('e', $event)"></div>
+      <div class="resize-handle resize-w" @mousedown="startResize('w', $event)"></div>
+      <div class="resize-handle resize-ne" @mousedown="startResize('ne', $event)"></div>
+      <div class="resize-handle resize-nw" @mousedown="startResize('nw', $event)"></div>
+      <div class="resize-handle resize-se" @mousedown="startResize('se', $event)"></div>
+      <div class="resize-handle resize-sw" @mousedown="startResize('sw', $event)"></div>
       <TransitionGroup name="task-list" tag="div" class="task-list-inner">
         <div
           v-for="(task, index) in tasks"
@@ -95,7 +105,15 @@
             </svg>
           </button>
           <div class="task-content">
-            <span class="task-title">{{ task.title }}</span>
+            <input
+              v-if="editingTaskId === task.task_id"
+              class="task-edit-input"
+              v-model="task.title"
+              @blur="finishEdit(task)"
+              @keyup.enter="finishEdit(task)"
+              @keyup.escape="cancelEdit(task)"
+            />
+            <span v-else class="task-title">{{ task.title }}</span>
             <div v-if="task.description && expandedTaskId === task.task_id" class="task-desc">{{ task.description }}</div>
             <div v-if="hasTimeReminder(task) && expandedTaskId === task.task_id" class="task-time" :class="getTimeClass(task)">
               <svg viewBox="0 0 14 14" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><circle cx="7" cy="7" r="5.5" /><path d="M7 4.5V7l1.8 1" /></svg>
@@ -140,6 +158,7 @@ const showThemePicker = ref(false)
 const inputFocused = ref(false)
 const isPinned = ref(false)
 const expandedTaskId = ref<string | null>(null)
+const editingTaskId = ref<string | null>(null)
 const currentTheme = ref('light')
 
 const themes = [
@@ -228,6 +247,21 @@ async function toggleTask(task: any) {
   window.api.send('task:changed')
 }
 
+async function finishEdit(task: any) {
+  if (editingTaskId.value !== task.task_id) return
+  const title = task.title.trim()
+  if (title) {
+    await window.api.task.update({ task_id: task.task_id, title })
+    window.api.send('task:changed')
+  }
+  editingTaskId.value = null
+}
+
+function cancelEdit(task: any) {
+  editingTaskId.value = null
+  loadTasks()
+}
+
 function toggleExpand(task: any) {
   if (!task.description && !hasTimeReminder(task)) return
   expandedTaskId.value = expandedTaskId.value === task.task_id ? null : task.task_id
@@ -239,13 +273,24 @@ function onTaskContextMenu(e: MouseEvent, task: any) {
   menu.className = 'widget-ctx'
   menu.style.left = e.clientX + 'px'
   menu.style.top = e.clientY + 'px'
-  menu.innerHTML = `<div class="ctx-item ctx-danger" data-action="delete">${t('task.deleteTask')}</div>`
+  menu.innerHTML = `
+    <div class="ctx-item" data-action="edit">${t('task.editTask') || '编辑任务'}</div>
+    <div class="ctx-item ctx-danger" data-action="delete">${t('task.deleteTask')}</div>
+  `
   document.body.appendChild(menu)
   const handler = async (ev: MouseEvent) => {
     const target = ev.target as HTMLElement
     const action = target.getAttribute('data-action')
     cleanup()
-    if (action === 'delete') {
+    if (action === 'edit') {
+      editingTaskId.value = task.task_id
+      expandedTaskId.value = null
+      setTimeout(() => {
+        const input = document.querySelector('.task-edit-input') as HTMLInputElement
+        input?.focus()
+        input?.select()
+      }, 0)
+    } else if (action === 'delete') {
       await window.api.task.remove(task.task_id)
       if (expandedTaskId.value === task.task_id) expandedTaskId.value = null
       await loadTasks()
@@ -284,11 +329,23 @@ function getTimeClass(task: any): string {
 function windowClose() {
   window.close()
 }
+
+type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+
+function startResize(dir: ResizeDir, e: MouseEvent) {
+  e.preventDefault()
+  window.api.widget.startResize(dir)
+  const onUp = () => {
+    window.api.widget.stopResize()
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mouseup', onUp)
+}
 </script>
 
 <style scoped>
 .todo-widget {
-  height: 100vh;
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
@@ -296,10 +353,28 @@ function windowClose() {
   overflow: hidden;
   position: relative;
   font-family: var(--font-family);
-  font-size: var(--font-sm);
+  font-size: var(--font-md);
   border-radius: 9px;
-  box-shadow: var(--shadow-window, none);
+  box-shadow:
+    0 2px 6px rgba(15, 17, 23, 0.2),
+    0 6px 14px rgba(15, 17, 23, 0.2),
+    0 10px 22px rgba(15, 17, 23, 0.16);
 }
+
+/* ── Resize handles ── */
+.resize-handle {
+  position: absolute;
+  z-index: 200;
+  -webkit-app-region: no-drag;
+}
+.resize-n  { top: 0;    left: 14px;  right: 14px; height: 4px;  cursor: n-resize; }
+.resize-s  { bottom: 0; left: 14px;  right: 14px; height: 4px;  cursor: s-resize; }
+.resize-e  { right: 0;  top: 14px;   bottom: 14px; width: 4px;  cursor: e-resize; }
+.resize-w  { left: 0;   top: 14px;   bottom: 14px; width: 4px;  cursor: w-resize; }
+.resize-ne { top: 0;    right: 0;    width: 14px;  height: 14px; cursor: ne-resize; }
+.resize-nw { top: 0;    left: 0;     width: 14px;  height: 14px; cursor: nw-resize; }
+.resize-se { bottom: 0; right: 0;    width: 14px;  height: 14px; cursor: se-resize; }
+.resize-sw { bottom: 0; left: 0;     width: 14px;  height: 14px; cursor: sw-resize; }
 
 /* ── Header ── */
 .widget-header {
@@ -335,7 +410,7 @@ function windowClose() {
 
 .header-label {
   font-weight: 600;
-  font-size: 12px;
+  font-size: 13.5px;
   letter-spacing: 0.02em;
   max-width: 120px;
   overflow: hidden;
@@ -373,7 +448,7 @@ function windowClose() {
   position: absolute;
   top: 32px;
   right: 0;
-  min-width: 140px;
+  min-width: auto;
   background: var(--bg-glass);
   backdrop-filter: blur(20px) saturate(1.5);
   border: 1px solid var(--border-primary);
@@ -388,10 +463,11 @@ function windowClose() {
   gap: 8px;
   width: 100%;
   padding: 6px 10px;
+  white-space: nowrap;
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   font-family: var(--font-family);
   cursor: pointer;
   border-radius: 7px;
@@ -514,7 +590,7 @@ function windowClose() {
   border: none;
   background: transparent;
   color: var(--text-secondary);
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   cursor: pointer;
   border-radius: 7px;
   transition: all 0.15s var(--ease-out);
@@ -617,7 +693,7 @@ function windowClose() {
   border: none;
   background: transparent;
   color: var(--text-primary);
-  font-size: 12px;
+  font-size: 13.5px;
   padding: 0;
   outline: none;
 }
@@ -725,15 +801,30 @@ function windowClose() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 13.5px;
   line-height: 1.45;
   transition: all 0.2s var(--ease-out);
   letter-spacing: 0.01em;
 }
 
+.task-edit-input {
+  font-size: 13.5px;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background: var(--bg-input);
+  border: 1.5px solid var(--accent-primary);
+  border-radius: 6px;
+  padding: 2px 6px;
+  outline: none;
+  width: 100%;
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
 .task-desc {
-  font-size: 11px;
-  color: var(--text-tertiary);
+  font-size: 12.5px;
+  color: var(--desc-color);
   line-height: 1.4;
   margin-top: 4px;
   white-space: pre-wrap;
@@ -745,18 +836,18 @@ function windowClose() {
   align-items: center;
   gap: 4px;
   margin-top: 3px;
-  font-size: 11px;
+  font-size: 12.5px;
   color: var(--accent-primary);
   font-weight: 500;
   letter-spacing: 0.02em;
 }
 
 .task-time.time-today {
-  color: #F87171;
+  color: var(--color-time-today);
 }
 
 .task-time.time-future {
-  color: #34D399;
+  color: var(--color-time-future);
 }
 
 .task-time.time-past {
@@ -781,11 +872,11 @@ function windowClose() {
 }
 
 .task-alarm.time-today {
-  color: #F87171;
+  color: var(--color-time-today);
 }
 
 .task-alarm.time-future {
-  color: #34D399;
+  color: var(--color-time-future);
 }
 
 .task-alarm.time-past {
@@ -891,7 +982,7 @@ function windowClose() {
 
 .empty-text {
   color: var(--text-tertiary);
-  font-size: 11px;
+  font-size: 12.5px;
   letter-spacing: 0.03em;
 }
 
@@ -942,7 +1033,7 @@ function windowClose() {
 }
 .widget-ctx .ctx-item {
   padding: 5px 12px;
-  font-size: 12px;
+  font-size: 13.5px;
   white-space: nowrap;
   color: var(--text-secondary);
   cursor: pointer;

@@ -5,10 +5,12 @@ import { createAppIcon } from './tray'
 
 const widgetWindows = new Map<string, BrowserWindow>()
 const STRIP_HEIGHT = 6
+const SHADOW_PADDING = 30
 const programmaticMoving = new Set<string>()
 
 interface DockState {
   isDocked: boolean
+  isExpanded: boolean
   savedBounds: Electron.Rectangle | null
   pollTimer: ReturnType<typeof setInterval> | null
   lastAction: number
@@ -16,6 +18,7 @@ interface DockState {
 
 const dockStates = new Map<string, DockState>()
 const activeAnimations = new Map<string, ReturnType<typeof setInterval>>()
+const activeResizes = new Map<string, ReturnType<typeof setInterval>>()
 
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3)
@@ -58,7 +61,7 @@ function animateBounds(
       activeAnimations.delete(widgetId)
       setTimeout(() => programmaticMoving.delete(widgetId), 50)
     }
-  }, 16)
+  }, 33)
 
   activeAnimations.set(widgetId, id)
 }
@@ -90,14 +93,21 @@ export function createWidgetWindow(widgetId: string): void {
   const record = dao.getById(widgetId)
   if (!record) return
 
+  // 修复负数 y 坐标（停靠收缩时可能保存了负值）
+  let winY = record.y
+  if (winY < 0) {
+    winY = 100
+    dao.update(widgetId, { y: winY })
+  }
+
   const win = new BrowserWindow({
     x: record.x,
-    y: record.y,
+    y: winY,
     width: record.width,
     height: record.height,
     frame: false,
     transparent: true,
-    resizable: true,
+    resizable: false,
     alwaysOnTop: !!record.always_on_top,
     skipTaskbar: true,
     opacity: record.opacity / 100,
@@ -107,34 +117,46 @@ export function createWidgetWindow(widgetId: string): void {
 
   loadWindowPage(win, 'widget', { widgetId })
 
-  const dockState: DockState = { isDocked: false, savedBounds: null, pollTimer: null, lastAction: 0 }
+  const dockState: DockState = { isDocked: false, isExpanded: false, savedBounds: null, pollTimer: null, lastAction: 0 }
   dockStates.set(widgetId, dockState)
 
   // -- Move: detect dock/undock --
   let moveTimer: ReturnType<typeof setTimeout> | null = null
   let moveEndTimer: ReturnType<typeof setTimeout> | null = null
+  let pendingDock = false
   win.on('move', () => {
     if (programmaticMoving.has(widgetId)) return
+
+    // 拖拽过程中：检查光标是否到达屏幕顶部（不受窗口 padding 和回弹影响）
+    if (!pendingDock) {
+      const cursor = screen.getCursorScreenPoint()
+      if (cursor.y <= 3) {
+        pendingDock = true
+      }
+    }
 
     if (moveEndTimer) clearTimeout(moveEndTimer)
     moveEndTimer = setTimeout(() => {
       if (win.isDestroyed()) return
       const bounds = win.getBounds()
 
-      if (dockState.isDocked) {
-        if (bounds.y > 10) {
+      if (pendingDock) {
+        // 松手后执行收缩
+        pendingDock = false
+        dockState.savedBounds = { ...bounds }
+        dockState.isDocked = true
+        dockState.isExpanded = false
+        animateBounds(widgetId, win, -(bounds.height - STRIP_HEIGHT), 250, easeInCubic)
+        win.webContents.send('widget:dock-changed', true)
+        startPoll(widgetId, win, dockState)
+      } else if (dockState.isDocked) {
+        if (bounds.y > -SHADOW_PADDING + 10) {
           dockState.isDocked = false
           dockState.savedBounds = null
           stopPoll(dockState)
           win.webContents.send('widget:dock-changed', false)
           dao?.update(widgetId, { x: bounds.x, y: bounds.y })
         }
-      } else if (bounds.y <= 0) {
-        dockState.savedBounds = { ...bounds }
-        dockState.isDocked = true
-        animateBounds(widgetId, win, -(bounds.height - STRIP_HEIGHT), 250, easeInCubic)
-        win.webContents.send('widget:dock-changed', true)
-        startPoll(widgetId, win, dockState)
       }
     }, 300)
 
@@ -166,6 +188,7 @@ export function createWidgetWindow(widgetId: string): void {
   // -- Cleanup --
   win.on('closed', () => {
     cancelAnimation(widgetId)
+    stopWidgetResize(widgetId)
     stopPoll(dockState)
     widgetWindows.delete(widgetId)
     dockStates.delete(widgetId)
@@ -195,17 +218,19 @@ function startPoll(widgetId: string, win: BrowserWindow, state: DockState): void
     const isInsideX = cursor.x >= bounds.x && cursor.x <= bounds.x + bounds.width
     const isInsideY = cursor.y >= bounds.y && cursor.y <= bounds.y + bounds.height
 
-    if (bounds.y < 0) {
+    if (!state.isExpanded) {
       // Collapsed: expand if cursor is over the visible strip
       const stripBottom = bounds.y + bounds.height
-      if (isInsideX && cursor.y >= 0 && cursor.y <= stripBottom && now - state.lastAction > 300) {
+      if (isInsideX && cursor.y >= -SHADOW_PADDING && cursor.y <= stripBottom && now - state.lastAction > 300) {
         state.lastAction = now
-        animateBounds(widgetId, win, 0, 250, easeOutCubic)
+        state.isExpanded = true
+        animateBounds(widgetId, win, -SHADOW_PADDING, 250, easeOutCubic)
       }
     } else {
       // Expanded: collapse if cursor left the window
       if (!(isInsideX && isInsideY) && now - state.lastAction > 500) {
         state.lastAction = now
+        state.isExpanded = false
         animateBounds(widgetId, win, -(bounds.height - STRIP_HEIGHT), 250, easeInCubic)
       }
     }
@@ -252,16 +277,73 @@ export function restoreAllWidgets(): void {
   }
 }
 
+// -- Custom resize (content-border handles) --
+export function findWidgetIdByWebContents(wc: Electron.WebContents): string | null {
+  for (const [id, win] of widgetWindows) {
+    if (win.webContents.equal(wc)) return id
+  }
+  return null
+}
+
+export function startWidgetResize(widgetId: string, direction: string): void {
+  const win = widgetWindows.get(widgetId)
+  if (!win) return
+  stopWidgetResize(widgetId)
+
+  const startBounds = win.getBounds()
+  const startCursor = screen.getCursorScreenPoint()
+  programmaticMoving.add(widgetId)
+
+  const timer = setInterval(() => {
+    if (win.isDestroyed()) { stopWidgetResize(widgetId); return }
+
+    const cursor = screen.getCursorScreenPoint()
+    const dx = cursor.x - startCursor.x
+    const dy = cursor.y - startCursor.y
+    const b = { ...startBounds }
+    const minW = 280, minH = 200
+
+    if (direction.includes('e')) b.width = Math.max(minW, startBounds.width + dx)
+    if (direction.includes('w')) {
+      const newW = Math.max(minW, startBounds.width - dx)
+      b.x = startBounds.x + startBounds.width - newW
+      b.width = newW
+    }
+    if (direction.includes('s')) b.height = Math.max(minH, startBounds.height + dy)
+    if (direction.includes('n')) {
+      const newH = Math.max(minH, startBounds.height - dy)
+      b.y = startBounds.y + startBounds.height - newH
+      b.height = newH
+    }
+
+    win.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height })
+  }, 16)
+
+  activeResizes.set(widgetId, timer)
+}
+
+export function stopWidgetResize(widgetId: string): void {
+  const timer = activeResizes.get(widgetId)
+  if (timer !== undefined) {
+    clearInterval(timer)
+    activeResizes.delete(widgetId)
+    setTimeout(() => programmaticMoving.delete(widgetId), 50)
+
+    const win = widgetWindows.get(widgetId)
+    if (win && !win.isDestroyed()) {
+      const bounds = win.getBounds()
+      dao?.update(widgetId, { x: bounds.x, y: bounds.y, width: bounds.width, height: bounds.height })
+      const dockState = dockStates.get(widgetId)
+      if (dockState?.savedBounds) {
+        dockState.savedBounds.width = bounds.width
+        dockState.savedBounds.height = bounds.height
+      }
+    }
+  }
+}
+
 export function sendToMainWindow(channel: string, ...args: any[]): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
   }
-}
-
-export function expandWidgetBySender(_wc: Electron.WebContents): void {
-  // No-op: polling handles expand/collapse now
-}
-
-export function collapseWidgetBySender(_wc: Electron.WebContents): void {
-  // No-op: polling handles expand/collapse now
 }

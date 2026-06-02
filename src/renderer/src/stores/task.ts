@@ -60,6 +60,7 @@ export const useTaskStore = defineStore('task', () => {
   function checkReminders() {
     const now = Date.now()
     const cutoff = now - 60000
+    const taskMap = new Map(tasks.value.map(t => [t.task_id, t]))
     for (const t of tasks.value) {
       if (t.complete || !t.due_date) continue
       if (t.due_date > now || t.due_date <= cutoff) continue
@@ -67,20 +68,16 @@ export const useTaskStore = defineStore('task', () => {
       remindedIds.add(t.task_id)
       playSound('sound_reminder')
     }
-    // 清理已不存在或已完成的任务
-    const activeIds = new Set(tasks.value.filter(t => !t.complete).map(t => t.task_id))
     for (const id of remindedIds) {
-      if (!activeIds.has(id)) remindedIds.delete(id)
+      const task = taskMap.get(id)
+      if (!task || task.complete) remindedIds.delete(id)
     }
   }
 
   function startReminderCheck() {
     if (reminderTimer) return
-    checkReminders()
     reminderTimer = setInterval(checkReminders, 30000)
   }
-
-  startReminderCheck()
 
   async function fetchTasks(filter?: Partial<TaskFilter>) {
     loading.value = true
@@ -92,6 +89,7 @@ export const useTaskStore = defineStore('task', () => {
       window.api.send('task:changed')
     } finally {
       loading.value = false
+      startReminderCheck()
     }
   }
 
