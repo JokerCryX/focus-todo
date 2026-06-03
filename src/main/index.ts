@@ -33,12 +33,13 @@ if (!gotTheLock) {
 
     mainWindow = new BrowserWindow({
       width: 960,
-      height: 660,
+      height: 725,
       minWidth: 860,
       minHeight: 560,
       show: false,
       frame: false,
       transparent: true,
+      resizable: false,
       icon: createAppIcon(),
       webPreferences: getWebPreferences()
     })

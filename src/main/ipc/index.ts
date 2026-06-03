@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, screen } from 'electron'
 import type { Database } from 'sql.js'
 import { TaskDao } from '../database/task.dao'
 import { CategoryDao } from '../database/category.dao'
@@ -52,6 +52,51 @@ function registerWindowIPC(): void {
   ipcMain.handle('popup:close', () => {
     closeAllPopups()
   })
+
+  // 主窗口自定义 resize
+  let mainResizeTimer: ReturnType<typeof setInterval> | undefined
+  ipcMain.on('main:startResize', (e, direction: string) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) return
+    if (mainResizeTimer !== undefined) clearInterval(mainResizeTimer)
+
+    const startBounds = win.getBounds()
+    const startCursor = screen.getCursorScreenPoint()
+
+    mainResizeTimer = setInterval(() => {
+      if (win.isDestroyed()) { stopMainResize(); return }
+      const cursor = screen.getCursorScreenPoint()
+      const dx = cursor.x - startCursor.x
+      const dy = cursor.y - startCursor.y
+      const b = { ...startBounds }
+      const minW = 450, minH = 400
+
+      if (direction.includes('e')) b.width = Math.max(minW, startBounds.width + dx)
+      if (direction.includes('w')) {
+        const newW = Math.max(minW, startBounds.width - dx)
+        b.x = startBounds.x + startBounds.width - newW
+        b.width = newW
+      }
+      if (direction.includes('s')) b.height = Math.max(minH, startBounds.height + dy)
+      if (direction.includes('n')) {
+        const newH = Math.max(minH, startBounds.height - dy)
+        b.y = startBounds.y + startBounds.height - newH
+        b.height = newH
+      }
+      win.setBounds({ x: b.x, y: b.y, width: b.width, height: b.height })
+    }, 16)
+  })
+
+  ipcMain.on('main:stopResize', () => {
+    stopMainResize()
+  })
+
+  function stopMainResize() {
+    if (mainResizeTimer !== undefined) {
+      clearInterval(mainResizeTimer)
+      mainResizeTimer = undefined
+    }
+  }
 }
 
 export function registerAllIPC(db: Database): void {

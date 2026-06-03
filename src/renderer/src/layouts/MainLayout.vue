@@ -1,5 +1,14 @@
 <template>
   <div class="app-layout" :class="{ 'focus-note': uiStore.focusNoteMode }">
+    <!-- Resize handles at content border -->
+    <div class="resize-handle resize-n" @mousedown="startResize('n', $event)" />
+    <div class="resize-handle resize-s" @mousedown="startResize('s', $event)" />
+    <div class="resize-handle resize-e" @mousedown="startResize('e', $event)" />
+    <div class="resize-handle resize-w" @mousedown="startResize('w', $event)" />
+    <div class="resize-handle resize-ne" @mousedown="startResize('ne', $event)" />
+    <div class="resize-handle resize-nw" @mousedown="startResize('nw', $event)" />
+    <div class="resize-handle resize-se" @mousedown="startResize('se', $event)" />
+    <div class="resize-handle resize-sw" @mousedown="startResize('sw', $event)" />
     <TitleBar />
     <div class="app-body">
       <SideBar v-show="!uiStore.focusNoteMode" />
@@ -97,6 +106,17 @@ function onThemeChanged(theme?: string) {
   }
 }
 
+type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+function startResize(dir: ResizeDir, e: MouseEvent) {
+  e.preventDefault()
+  window.api.window.startResize(dir)
+  const onUp = () => {
+    window.api.window.stopResize()
+    document.removeEventListener('mouseup', onUp)
+  }
+  document.addEventListener('mouseup', onUp)
+}
+
 function onMainClick(e: MouseEvent) {
   if (!uiStore.editorVisible) return
   const target = e.target as HTMLElement
@@ -119,6 +139,21 @@ function onMainClick(e: MouseEvent) {
     0 10px 22px rgba(15, 17, 23, 0.16);
   position: relative;
 }
+
+/* Resize handles at content border */
+.resize-handle {
+  position: absolute;
+  z-index: 200;
+  -webkit-app-region: no-drag;
+}
+.resize-n  { top: 0;    left: 14px;  right: 14px; height: 4px;  cursor: n-resize; }
+.resize-s  { bottom: 0; left: 14px;  right: 14px; height: 4px;  cursor: s-resize; }
+.resize-e  { right: 0;  top: 14px;   bottom: 14px; width: 4px;  cursor: e-resize; }
+.resize-w  { left: 0;   top: 14px;   bottom: 14px; width: 4px;  cursor: w-resize; }
+.resize-ne { top: 0;    right: 0;    width: 14px;  height: 14px; cursor: ne-resize; }
+.resize-nw { top: 0;    left: 0;     width: 14px;  height: 14px; cursor: nw-resize; }
+.resize-se { bottom: 0; right: 0;    width: 14px;  height: 14px; cursor: se-resize; }
+.resize-sw { bottom: 0; left: 0;     width: 14px;  height: 14px; cursor: sw-resize; }
 
 .app-body {
   flex: 1;

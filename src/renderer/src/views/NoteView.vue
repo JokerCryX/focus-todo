@@ -49,7 +49,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useUIStore } from '@/stores/ui'
 
 const uiStore = useUIStore()
@@ -72,14 +72,15 @@ const fonts = [
 
 const sizes = [12, 13, 14, 15, 16, 18, 20]
 
-const currentFont = ref(localStorage.getItem(FONT_KEY) || 'inherit')
-const currentSize = ref(Number(localStorage.getItem(SIZE_KEY)) || 12)
+const currentFont = ref(localStorage.getItem(FONT_KEY) || 'SimHei, STHeiti, sans-serif')
+const currentSize = ref(Number(localStorage.getItem(SIZE_KEY)) || 14)
 const isBold = ref(false)
 const isItalic = ref(false)
 const isStrike = ref(false)
 const currentColor = ref('#000000')
 
 const editorRef = ref<HTMLDivElement | null>(null)
+let suppressFontDetection = false
 
 function execFormat(command: string) {
   document.execCommand(command, false)
@@ -88,19 +89,37 @@ function execFormat(command: string) {
 }
 
 function applyFont() {
-  document.execCommand('fontName', false, currentFont.value)
-  localStorage.setItem(FONT_KEY, currentFont.value)
+  const font = currentFont.value
+  suppressFontDetection = true
+  document.execCommand('fontName', false, font)
+  suppressFontDetection = false
+  currentFont.value = font
+  localStorage.setItem(FONT_KEY, font)
   editorRef.value?.focus()
 }
 
 function applyFontSize() {
+  const size = currentSize.value
+  suppressFontDetection = true
   document.execCommand('fontSize', false, '7')
-  const fontElements = editorRef.value?.querySelectorAll('font[size="7"]')
-  fontElements?.forEach(el => {
-    ;(el as HTMLElement).style.fontSize = currentSize.value + 'px'
+  const editor = editorRef.value
+  if (!editor) { suppressFontDetection = false; return }
+
+  // 兼容两种 Chromium 输出：<font size="7"> 或 <span style="font-size: xxx-large">
+  editor.querySelectorAll('font[size="7"]').forEach(el => {
+    ;(el as HTMLElement).style.fontSize = size + 'px'
     el.removeAttribute('size')
   })
-  localStorage.setItem(SIZE_KEY, String(currentSize.value))
+  editor.querySelectorAll('span').forEach(el => {
+    const fs = (el as HTMLElement).style.fontSize
+    if (fs === 'xxx-large' || fs === '-webkit-xxx-large') {
+      ;(el as HTMLElement).style.fontSize = size + 'px'
+    }
+  })
+
+  suppressFontDetection = false
+  currentSize.value = size
+  localStorage.setItem(SIZE_KEY, String(size))
 }
 
 function onFontWheel(e: WheelEvent) {
@@ -127,6 +146,37 @@ function updateActiveStates() {
   isStrike.value = document.queryCommandState('strikeThrough')
   const color = document.queryCommandValue('foreColor')
   if (color) currentColor.value = color.startsWith('rgb') ? rgbToHex(color) : color
+
+  // 检测选区所在元素的字体和字号
+  if (suppressFontDetection) return
+  const sel = window.getSelection()
+  if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+    const node = sel.anchorNode
+    if (node) {
+      const el = (node.nodeType === 3 ? node.parentElement : node) as HTMLElement | null
+      if (el && editorRef.value?.contains(el)) {
+        // 字体
+        const fontName = document.queryCommandValue('fontName')
+        if (fontName) {
+          const normalized = fontName.replace(/['"]/g, '').toLowerCase()
+          const matched = fonts.find(f => {
+            const fNorm = f.value.replace(/['"]/g, '').toLowerCase()
+            return fNorm === normalized || fNorm.includes(normalized) || normalized.includes(fNorm)
+          })
+          if (matched) currentFont.value = matched.value
+        }
+        // 字号
+        const computed = window.getComputedStyle(el)
+        const px = parseInt(computed.fontSize)
+        if (!isNaN(px)) {
+          const closest = sizes.reduce((prev, curr) =>
+            Math.abs(curr - px) < Math.abs(prev - px) ? curr : prev
+          )
+          currentSize.value = closest
+        }
+      }
+    }
+  }
 }
 
 function rgbToHex(rgb: string): string {
@@ -170,9 +220,9 @@ onMounted(() => {
   loadContent()
 })
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   const html = editorRef.value?.innerHTML || ''
-  localStorage.setItem(STORAGE_KEY, html)
+  if (html) localStorage.setItem(STORAGE_KEY, html)
 })
 </script>
 
@@ -182,7 +232,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  overflow: hidden;
+  overflow: visible;
   animation: fadeIn 0.25s var(--ease-out);
 }
 
@@ -226,7 +276,7 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   color: var(--text-secondary);
-  font-size: var(--font-xs);
+  font-size: var(--font-sm);
   font-family: var(--font-family);
   cursor: pointer;
   outline: none;
@@ -251,6 +301,12 @@ onUnmounted(() => {
 
 .size-select {
   width: 66px;
+}
+
+.focus-note .toolbar-select:not(.size-select) {
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toolbar-separator {
@@ -406,7 +462,8 @@ onUnmounted(() => {
 .note-editor {
   padding: 0 28px 60px 56px;
   outline: none;
-  font-size: 12px;
+  font-size: 14px;
+  letter-spacing: 0.05em;
   line-height: 32px;
   color: var(--text-primary);
   word-wrap: break-word;

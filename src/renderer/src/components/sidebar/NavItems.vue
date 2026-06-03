@@ -39,7 +39,7 @@
   padding: 7px var(--spacing-lg);
   color: var(--text-secondary);
   text-decoration: none;
-  font-size: var(--font-sm);
+  font-size: var(--font-md);
   transition: all var(--transition-fast);
   cursor: pointer;
   letter-spacing: 0.01em;

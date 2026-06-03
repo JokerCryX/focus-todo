@@ -39,7 +39,9 @@ const api = {
     setAlwaysOnTop: (flag: boolean) => ipcRenderer.invoke('window:setAlwaysOnTop', flag),
     isAlwaysOnTop: () => ipcRenderer.invoke('window:isAlwaysOnTop'),
     resize: (width: number, height: number) => ipcRenderer.invoke('window:resize', width, height),
-    setBackgroundColor: (color: string) => ipcRenderer.invoke('window:setBackgroundColor', color)
+    setBackgroundColor: (color: string) => ipcRenderer.invoke('window:setBackgroundColor', color),
+    startResize: (direction: string) => ipcRenderer.send('main:startResize', direction),
+    stopResize: () => ipcRenderer.send('main:stopResize')
   },
   data: {
     export: () => ipcRenderer.invoke('data:export'),

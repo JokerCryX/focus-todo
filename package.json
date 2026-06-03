@@ -63,6 +63,7 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "allowElevation": true,
+      "runAfterFinish": false,
       "installerIcon": "build/icons/icon.ico",
       "uninstallerIcon": "build/icons/icon.ico"
     },
