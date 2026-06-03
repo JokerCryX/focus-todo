@@ -3,6 +3,7 @@ import { join } from 'path'
 import { t } from './locales'
 import { WidgetDao } from './database/widget.dao'
 import { createWidgetWindow } from './widget-manager'
+import { showWindow } from './window-utils'
 
 let tray: Tray | null = null
 let widgetDao: WidgetDao | null = null
@@ -29,8 +30,7 @@ function buildMenu(): Menu {
     {
       label: t('tray.show'),
       click: () => {
-        mainWindowRef?.show()
-        mainWindowRef?.focus()
+        if (mainWindowRef) showWindow(mainWindowRef)
       }
     },
     { type: 'separator' }
@@ -71,8 +71,7 @@ export function createTray(mainWindow: BrowserWindow): void {
   tray.setContextMenu(buildMenu())
 
   tray.on('double-click', () => {
-    mainWindow.show()
-    mainWindow.focus()
+    showWindow(mainWindow)
   })
 }
 

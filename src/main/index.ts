@@ -7,7 +7,7 @@ import { createTray, setWidgetDao, createAppIcon } from './tray'
 import { initWidgetManager, restoreAllWidgets } from './widget-manager'
 import { WidgetDao } from './database/widget.dao'
 import { SettingsDao } from './database/settings.dao'
-import { getWebPreferences } from './window-utils'
+import { getWebPreferences, showWindow, hideWindow } from './window-utils'
 
 let mainWindow: BrowserWindow | null = null
 let isQuitting = false
@@ -18,10 +18,7 @@ if (!gotTheLock) {
   app.quit()
 } else {
   app.on('second-instance', () => {
-    if (mainWindow) {
-      if (!mainWindow.isVisible()) mainWindow.show()
-      mainWindow.focus()
-    }
+    if (mainWindow) showWindow(mainWindow)
   })
 
   app.whenReady().then(async () => {
@@ -33,7 +30,7 @@ if (!gotTheLock) {
 
     mainWindow = new BrowserWindow({
       width: 960,
-      height: 725,
+      height: 700,
       minWidth: 860,
       minHeight: 560,
       show: false,
@@ -51,7 +48,7 @@ if (!gotTheLock) {
     mainWindow.on('close', (e) => {
       if (isQuitting) return
       e.preventDefault()
-      mainWindow!.hide()
+      hideWindow(mainWindow!)
     })
 
     mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -80,7 +77,7 @@ if (!gotTheLock) {
     restoreAllWidgets()
 
     app.on('activate', () => {
-      mainWindow?.show()
+      if (mainWindow) showWindow(mainWindow)
     })
   })
 
@@ -107,11 +104,10 @@ function registerGlobalShortcut(win: BrowserWindow, dao: SettingsDao) {
     if (!keys) return
     const accel = keys.replace(/\+/g, '+')
     globalShortcut.register(accel, () => {
-      if (win.isVisible()) {
-        win.hide()
+      if (win.isMinimized()) {
+        showWindow(win)
       } else {
-        win.show()
-        win.focus()
+        hideWindow(win)
       }
     })
   } catch {}
