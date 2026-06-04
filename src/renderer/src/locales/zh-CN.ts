@@ -49,6 +49,7 @@ export default {
     delete: '删除',
     createdAt: '创建时间',
     editTask: '编辑任务',
+    openInWindow: '打开窗口',
     edit: '编辑',
     addTask: '新增任务',
     add: '新增',

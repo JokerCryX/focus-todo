@@ -274,6 +274,7 @@ function onTaskContextMenu(e: MouseEvent, task: any) {
   menu.style.left = e.clientX + 'px'
   menu.style.top = e.clientY + 'px'
   menu.innerHTML = `
+    <div class="ctx-item" data-action="open">${t('task.openInWindow') || '打开窗口'}</div>
     <div class="ctx-item" data-action="edit">${t('task.editTask') || '编辑任务'}</div>
     <div class="ctx-item ctx-danger" data-action="delete">${t('task.deleteTask')}</div>
   `
@@ -282,7 +283,9 @@ function onTaskContextMenu(e: MouseEvent, task: any) {
     const target = ev.target as HTMLElement
     const action = target.getAttribute('data-action')
     cleanup()
-    if (action === 'edit') {
+    if (action === 'open') {
+      await window.api.widget.openTaskInMain(task.task_id)
+    } else if (action === 'edit') {
       editingTaskId.value = task.task_id
       expandedTaskId.value = null
       setTimeout(() => {
@@ -1033,7 +1036,7 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
 }
 .widget-ctx .ctx-item {
   padding: 5px 12px;
-  font-size: 13.5px;
+  font-size: 12.5px;
   white-space: nowrap;
   color: var(--text-secondary);
   cursor: pointer;

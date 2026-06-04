@@ -227,7 +227,17 @@ function startPoll(widgetId: string, win: BrowserWindow, state: DockState): void
         animateBounds(widgetId, win, -SHADOW_PADDING, 250, easeOutCubic)
       }
     } else {
-      // Expanded: collapse if cursor left the window
+      // Expanded: if dragged far from top, undock instead of collapse
+      if (bounds.y > 0) {
+        state.isDocked = false
+        state.isExpanded = false
+        state.savedBounds = null
+        stopPoll(state)
+        win.webContents.send('widget:dock-changed', false)
+        dao?.update(widgetId, { x: bounds.x, y: bounds.y })
+        return
+      }
+      // Collapse if cursor left the window
       if (!(isInsideX && isInsideY) && now - state.lastAction > 500) {
         state.lastAction = now
         state.isExpanded = false
@@ -346,4 +356,8 @@ export function sendToMainWindow(channel: string, ...args: any[]): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(channel, ...args)
   }
+}
+
+export function getMainWindow(): BrowserWindow | null {
+  return mainWindow
 }

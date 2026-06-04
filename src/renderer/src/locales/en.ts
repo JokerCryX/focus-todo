@@ -49,6 +49,7 @@ export default {
     delete: 'Delete',
     createdAt: 'Created At',
     editTask: 'Edit Task',
+    openInWindow: 'Open in Window',
     edit: 'Edit',
     addTask: 'Add Task',
     add: 'Add',

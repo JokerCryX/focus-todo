@@ -73,8 +73,10 @@ watch(() => route.fullPath, () => {
   }
 })
 
-function onWidgetOpenTask(taskId: string) {
-  uiStore.openEditor(taskId)
+async function onWidgetOpenTask(taskId: string) {
+  const all = await window.api.task.searchAll()
+  const task = all?.find((t: any) => t.task_id === taskId)
+  if (task) uiStore.openEditor(task)
 }
 
 function onTaskChanged() {

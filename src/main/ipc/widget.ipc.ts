@@ -1,6 +1,7 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { WidgetDao } from '../database/widget.dao'
-import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, isWidgetOpen, broadcastToWidgets, findWidgetIdByWebContents, startWidgetResize, stopWidgetResize } from '../widget-manager'
+import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, getMainWindow, isWidgetOpen, broadcastToWidgets, findWidgetIdByWebContents, startWidgetResize, stopWidgetResize } from '../widget-manager'
+import { showWindow } from '../window-utils'
 
 export function registerWidgetIPC(dao: WidgetDao): void {
   ipcMain.handle('widget:list', () => {
@@ -23,6 +24,8 @@ export function registerWidgetIPC(dao: WidgetDao): void {
   })
 
   ipcMain.handle('widget:openTaskInMain', (_e, taskId: string) => {
+    const mainWin = getMainWindow()
+    if (mainWin) showWindow(mainWin)
     sendToMainWindow('widget:open-task', taskId)
   })
 
