@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { useTaskStore } from './task'
 
 type Phase = 'idle' | 'focus' | 'shortBreak' | 'longBreak'
 
@@ -87,6 +88,7 @@ export const useTomatoStore = defineStore('tomato', () => {
 
   function reset() {
     stopTimer()
+    phase.value = 'idle'
     remainingSeconds.value = totalSeconds.value
   }
 

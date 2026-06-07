@@ -39,16 +39,28 @@ export const useTaskStore = defineStore('task', () => {
     }
   }
 
-  function playSound(key: string) {
+  async function playSound(key: string) {
     if (fallbackKeys.has(key)) {
       const file = soundCache[key]
       if (file) window.api.sound.play(file)
       return
     }
     const buffer = audioBufferCache[key]
-    if (!buffer) return
+    if (!buffer) {
+      const file = soundCache[key]
+      if (file) window.api.sound.play(file)
+      return
+    }
     if (!audioCtx) audioCtx = new AudioContext()
-    if (audioCtx.state === 'suspended') audioCtx.resume()
+    if (audioCtx.state === 'suspended') {
+      try {
+        await audioCtx.resume()
+      } catch {
+        const file = soundCache[key]
+        if (file) window.api.sound.play(file)
+        return
+      }
+    }
     const source = audioCtx.createBufferSource()
     source.buffer = buffer
     source.connect(audioCtx.destination)
