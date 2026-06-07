@@ -87,15 +87,19 @@
       <div class="resize-handle resize-nw" @mousedown="startResize('nw', $event)"></div>
       <div class="resize-handle resize-se" @mousedown="startResize('se', $event)"></div>
       <div class="resize-handle resize-sw" @mousedown="startResize('sw', $event)"></div>
-      <TransitionGroup name="task-list" tag="div" class="task-list-inner">
+      <TransitionGroup name="task-list" tag="div" class="task-list-inner" @dragover.prevent @drop="onDrop">
         <div
           v-for="(task, index) in tasks"
           :key="task.task_id"
           class="task-item"
-          :class="{ completed: task.complete, [`priority-${task.priority}`]: true, expanded: expandedTaskId === task.task_id }"
+          :class="{ completed: task.complete, [`priority-${task.priority}`]: true, expanded: expandedTaskId === task.task_id, 'drag-over': dragOverIndex === index }"
           :style="{ '--i': index }"
+          :draggable="currentView === 'inbox'"
           @click="toggleExpand(task)"
           @contextmenu.prevent="onTaskContextMenu($event, task)"
+          @dragstart="onDragStart($event, index)"
+          @dragover="onDragOver($event, index)"
+          @dragend="onDragEnd"
         >
           <div class="priority-bar"></div>
           <button class="task-check" :class="{ checked: task.complete }" @click.stop="toggleTask(task)">
@@ -160,6 +164,8 @@ const isPinned = ref(false)
 const expandedTaskId = ref<string | null>(null)
 const editingTaskId = ref<string | null>(null)
 const currentTheme = ref('light')
+const dragIndex = ref(-1)
+const dragOverIndex = ref(-1)
 
 const themes = [
   { value: 'light', label: t('settings.light'), color: '#f8f9fa' },
@@ -332,6 +338,39 @@ function getTimeClass(task: any): string {
 
 function windowClose() {
   window.close()
+}
+
+function onDragStart(e: DragEvent, index: number) {
+  dragIndex.value = index
+  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+}
+
+function onDragOver(e: DragEvent, index: number) {
+  e.preventDefault()
+  dragOverIndex.value = index
+}
+
+function onDragEnd() {
+  dragIndex.value = -1
+  dragOverIndex.value = -1
+}
+
+async function onDrop() {
+  if (dragIndex.value === -1 || dragIndex.value === dragOverIndex.value) {
+    onDragEnd()
+    return
+  }
+  const reordered = [...tasks.value]
+  const [moved] = reordered.splice(dragIndex.value, 1)
+  reordered.splice(dragOverIndex.value, 0, moved)
+  const updates: Promise<any>[] = []
+  for (let i = 0; i < reordered.length; i++) {
+    updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
+  }
+  await Promise.all(updates)
+  onDragEnd()
+  loadTasks()
+  window.api.send('task:changed')
 }
 
 type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
@@ -792,6 +831,11 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
 
 .task-item:hover {
   background: var(--bg-hover);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.task-item.drag-over {
+  border-top: 2px solid var(--accent-primary);
 }
 
 /* ── Task content ── */
