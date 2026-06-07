@@ -46,6 +46,7 @@
 
 .pin-btn.active {
   opacity: 1;
+  color: var(--accent-primary);
 }
 
 .pin-icon {

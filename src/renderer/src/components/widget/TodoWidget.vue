@@ -164,6 +164,7 @@ const currentTheme = ref('light')
 const themes = [
   { value: 'light', label: t('settings.light'), color: '#f8f9fa' },
   { value: 'dark', label: t('settings.dark'), color: '#1e2030' },
+  { value: 'hermes', label: t('settings.hermes'), color: '#041c1c' },
   { value: 'transparent-light', label: t('settings.transparentLight'), color: 'rgba(240,242,248,0.6)' },
   { value: 'transparent-dark', label: t('settings.transparentDark'), color: 'rgba(24,26,38,0.6)' }
 ]
@@ -904,6 +905,7 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
   align-items: center;
   justify-content: center;
   margin-top: 1px;
+  position: relative;
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1054,12 +1056,14 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
 }
 
 html.dark .add-submit,
-html.transparent-dark .add-submit {
+html.transparent-dark .add-submit,
+html.hermes .add-submit {
   color: rgba(255, 255, 255, 0.7);
 }
 
 html.dark .add-input-wrap input::placeholder,
-html.transparent-dark .add-input-wrap input::placeholder {
+html.transparent-dark .add-input-wrap input::placeholder,
+html.hermes .add-input-wrap input::placeholder {
   color: rgba(255, 255, 255, 0.5);
 }
 </style>

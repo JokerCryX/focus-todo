@@ -15,17 +15,31 @@ import { registerStatisticsIPC } from './statistics.ipc'
 import { registerNoiseIPC } from './noise.ipc'
 import { registerAttachmentIPC } from './attachment.ipc'
 import { registerWidgetIPC } from './widget.ipc'
+import { registerStickyNoteIPC } from './sticky-note.ipc'
 import { registerSoundIPC } from './sound.ipc'
+import { StickyNoteDao } from '../database/sticky-note.dao'
 import { openTaskPopup, closeAllPopups } from '../popup-manager'
 
 function registerWindowIPC(): void {
   ipcMain.handle('window:minimize', (e) => {
     BrowserWindow.fromWebContents(e.sender)?.minimize()
   })
+  let mainWindowBounds: { x: number; y: number; width: number; height: number } | null = null
+
   ipcMain.handle('window:maximize', (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     if (!win) return
-    win.isMaximized() ? win.unmaximize() : win.maximize()
+    if (mainWindowBounds) {
+      win.setBounds(mainWindowBounds)
+      mainWindowBounds = null
+    } else {
+      mainWindowBounds = win.getBounds()
+      const { workArea } = screen.getDisplayNearestPoint(screen.getCursorScreenPoint())
+      win.setBounds({ x: workArea.x, y: workArea.y, width: workArea.width, height: workArea.height })
+    }
+  })
+  ipcMain.handle('window:isMaximized', () => {
+    return !!mainWindowBounds
   })
   ipcMain.handle('window:close', (e) => {
     BrowserWindow.fromWebContents(e.sender)?.close()
@@ -112,6 +126,7 @@ export function registerAllIPC(db: Database): void {
   registerNoiseIPC()
   registerAttachmentIPC()
   registerWidgetIPC(new WidgetDao(db))
+  registerStickyNoteIPC(new StickyNoteDao(db), new WidgetDao(db))
   registerSoundIPC()
   registerWindowIPC()
 }

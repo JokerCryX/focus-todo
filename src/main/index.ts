@@ -1,11 +1,14 @@
-import { app, BrowserWindow, shell, globalShortcut, ipcMain } from 'electron'
+import { app, BrowserWindow, shell, globalShortcut, ipcMain, protocol, net } from 'electron'
 import { join } from 'path'
+import path from 'path'
+import { readFileSync } from 'fs'
 import { getDatabase, closeDatabase } from './database'
 import { runMigrations } from './database/migrations'
 import { registerAllIPC } from './ipc'
 import { createTray, setWidgetDao, createAppIcon } from './tray'
-import { initWidgetManager, restoreAllWidgets } from './widget-manager'
+import { initWidgetManager, restoreAllWidgets, setStickyNoteDao, toggleTodoWidget } from './widget-manager'
 import { WidgetDao } from './database/widget.dao'
+import { StickyNoteDao } from './database/sticky-note.dao'
 import { SettingsDao } from './database/settings.dao'
 import { getWebPreferences, showWindow, hideWindow } from './window-utils'
 
@@ -13,6 +16,11 @@ let mainWindow: BrowserWindow | null = null
 let isQuitting = false
 
 const gotTheLock = app.requestSingleInstanceLock()
+
+// 注册自定义协议，让 renderer 可以直接加载本地音频文件
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'local-audio', privileges: { bypassCSP: true, stream: true, supportFetchAPI: true } }
+])
 
 if (!gotTheLock) {
   app.quit()
@@ -23,6 +31,23 @@ if (!gotTheLock) {
 
   app.whenReady().then(async () => {
     app.setAppUserModelId('com.focustodo.app')
+
+    // 注册 local-audio:// 协议处理
+    const audioDir = app.isPackaged
+      ? path.join(process.resourcesPath, 'audio')
+      : path.join(process.cwd(), 'public/audio')
+    protocol.handle('local-audio', (request) => {
+      const url = new URL(request.url)
+      // 兼容 local-audio:///file.mp3（pathname）和 local-audio://file.mp3（hostname）
+      const fileName = url.pathname.replace(/^\//, '') || url.hostname
+      const filePath = path.join(audioDir, fileName)
+      try {
+        const data = readFileSync(filePath)
+        return new Response(data, { headers: { 'content-type': 'audio/mpeg' } })
+      } catch {
+        return new Response('not found', { status: 404 })
+      }
+    })
 
     const db = await getDatabase()
     runMigrations(db)
@@ -74,6 +99,7 @@ if (!gotTheLock) {
     const widgetDao = new WidgetDao(db)
     setWidgetDao(widgetDao)
     initWidgetManager(mainWindow, widgetDao)
+    setStickyNoteDao(new StickyNoteDao(db))
     restoreAllWidgets()
 
     app.on('activate', () => {
@@ -100,15 +126,21 @@ function registerGlobalShortcut(win: BrowserWindow, dao: SettingsDao) {
   if (!raw) return
   try {
     const map = JSON.parse(raw) as Record<string, string>
-    const keys = map['hide_window']
-    if (!keys) return
-    const accel = keys.replace(/\+/g, '+')
-    globalShortcut.register(accel, () => {
-      if (win.isMinimized()) {
-        showWindow(win)
-      } else {
-        hideWindow(win)
-      }
-    })
+    const hideKeys = map['hide_window']
+    if (hideKeys) {
+      globalShortcut.register(hideKeys, () => {
+        if (win.isMinimized()) {
+          showWindow(win)
+        } else {
+          hideWindow(win)
+        }
+      })
+    }
+    const widgetKeys = map['toggle_widget']
+    if (widgetKeys) {
+      globalShortcut.register(widgetKeys, () => {
+        toggleTodoWidget()
+      })
+    }
   } catch {}
 }

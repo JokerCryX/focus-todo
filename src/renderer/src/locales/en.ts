@@ -20,6 +20,7 @@ export default {
     notes: 'Notes',
     statistics: 'Statistics',
     widget: 'Todo Widget',
+    stickyNotes: 'Sticky Notes',
     trash: 'Trash',
     categories: 'Categories',
     settings: 'Settings',
@@ -152,6 +153,7 @@ export default {
     themeLabel: 'Theme',
     light: 'Light',
     dark: 'Dark',
+    hermes: 'Hermes',
     transparentDark: 'Glass Dark',
     transparentLight: 'Glass Light',
     shortcuts: 'Shortcuts',
@@ -282,5 +284,17 @@ export default {
     createCalendar: 'New Calendar Widget',
     manage: 'Widget Manager',
     remove: 'Remove'
+  },
+
+  stickyNotes: {
+    title: 'Sticky Notes',
+    empty: 'No sticky notes. Click + to create',
+    addNote: 'New Sticky Note',
+    toWidget: 'Pop out to desktop',
+    fromWidget: 'Back to list',
+    pin: 'Pin to Top',
+    unpin: 'Unpin',
+    placeholder: 'Type something...',
+    delete: 'Delete note'
   }
 }

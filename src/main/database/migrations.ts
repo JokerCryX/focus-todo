@@ -82,6 +82,18 @@ export function runMigrations(db: Database): void {
     )
   `)
 
+  db.run(`
+    CREATE TABLE IF NOT EXISTS sticky_notes (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      note_id     TEXT UNIQUE NOT NULL,
+      content     TEXT DEFAULT '',
+      color       TEXT DEFAULT '#FFF9C4',
+      is_widget   INTEGER DEFAULT 0,
+      created_at  INTEGER NOT NULL,
+      updated_at  INTEGER NOT NULL
+    )
+  `)
+
   // 索引
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date)')
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category_id)')

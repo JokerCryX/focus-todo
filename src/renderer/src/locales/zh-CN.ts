@@ -20,6 +20,7 @@ export default {
     notes: '笔记',
     statistics: '统计',
     widget: '待办组件',
+    stickyNotes: '便利贴',
     trash: '回收站',
     categories: '分类',
     settings: '设置',
@@ -152,6 +153,7 @@ export default {
     themeLabel: '主题模式',
     light: '浅色',
     dark: '深色',
+    hermes: 'Hermes',
     transparentDark: '透黑',
     transparentLight: '透白',
     shortcuts: '快捷键',
@@ -282,5 +284,17 @@ export default {
     createCalendar: '新建日历小组件',
     manage: '小组件管理',
     remove: '删除'
+  },
+
+  stickyNotes: {
+    title: '便利贴',
+    empty: '暂无便利贴，点击 + 创建',
+    addNote: '新建便利贴',
+    toWidget: '转为桌面组件',
+    fromWidget: '回到列表',
+    pin: '置顶',
+    unpin: '取消置顶',
+    placeholder: '输入内容...',
+    delete: '删除便利贴'
   }
 }

@@ -2,7 +2,7 @@
   <div
     class="task-card"
     :class="{ completed: task.complete, [`priority-${task.priority}`]: true }"
-    @click="uiStore.openEditor(task)"
+    @click="uiStore.editingTask?.task_id === task.task_id ? uiStore.closeEditor() : uiStore.openEditor(task)"
     @contextmenu.prevent="onContextMenu"
   >
     <div class="priority-bar"></div>
@@ -168,7 +168,7 @@ function onContextMenu(e: MouseEvent) {
 }
 
 .task-title {
-  font-size: var(--font-lg);
+  font-size: 14px;
   color: var(--text-primary);
   line-height: 1.45;
   word-break: break-word;
@@ -178,9 +178,8 @@ function onContextMenu(e: MouseEvent) {
 .task-desc {
   font-size: var(--font-sm);
   color: var(--desc-color);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: pre-wrap;
+  word-break: break-word;
   margin-top: 2px;
 }
 
@@ -308,7 +307,8 @@ function onContextMenu(e: MouseEvent) {
 }
 
 html.dark .task-category-badge,
-html.transparent-dark .task-category-badge {
+html.transparent-dark .task-category-badge,
+html.hermes .task-category-badge {
   color: white !important;
 }
 </style>

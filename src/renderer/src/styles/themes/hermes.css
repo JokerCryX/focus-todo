@@ -1,0 +1,66 @@
+html.hermes {
+  --bg-primary: #041c1c;
+  --bg-secondary: #072424;
+  --bg-tertiary: #0b2e2e;
+  --bg-sidebar: #041c1c;
+  --bg-hover: rgba(255, 189, 56, 0.08);
+  --bg-active: rgba(255, 189, 56, 0.14);
+  --bg-card: #ffe6cb;
+  --bg-editor: #fff0db;
+  --bg-titlebar: #041c1c;
+  --bg-input: #0b2e2e;
+  --bg-overlay: rgba(4, 28, 28, 0.85);
+  --bg-glass: rgba(4, 28, 28, 0.78);
+
+  --text-primary: #FFEED1;
+  --text-secondary: rgba(255, 238, 209, 0.75);
+  --text-tertiary: #FFEED1;
+  --text-placeholder: rgba(255, 255, 255, 0.3);
+  --text-inverse: #041c1c;
+
+  --border-primary: rgba(255, 230, 203, 0.12);
+  --border-secondary: rgba(255, 230, 203, 0.06);
+  --border-active: #2dd4a8;
+
+  --accent-primary: #2dd4a8;
+  --accent-hover: #5eecc4;
+  --accent-light: rgba(45, 212, 168, 0.1);
+  --accent-glow: rgba(45, 212, 168, 0.3);
+
+  --danger: #fb2c36;
+  --danger-light: rgba(251, 44, 54, 0.1);
+  --success: #4ade80;
+  --warning: #ffbd38;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 1px rgba(45, 212, 168, 0.06);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 1px rgba(45, 212, 168, 0.08);
+  --shadow-accent: 0 0 0 3px rgba(45, 212, 168, 0.2);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(45, 212, 168, 0.04);
+  --shadow-card-hover: 0 4px 16px rgba(45, 212, 168, 0.12), 0 0 0 1px rgba(45, 212, 168, 0.18);
+
+  /* 番茄钟色系 — 琥珀暖金 */
+  --tomato-focus: #ffbd38;
+  --tomato-focus-rgb: 255, 189, 56;
+  --tomato-accent: #e6a82e;
+  --tomato-accent-hover: #d49a28;
+  --tomato-accent-rgb: 230, 168, 46;
+
+  /* 质感效果 */
+  --noise-opacity: 0.12;
+  --glow-warm: rgba(255, 189, 56, 0.15);
+  --glow-warm-strong: rgba(255, 189, 56, 0.25);
+  --arc-color: #ffbd38;
+  --arc-speed: 4s;
+}
+
+/* Arc Border 动画角度 */
+@property --hermes-arc-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes hermes-arc-spin {
+  to { --hermes-arc-angle: 360deg; }
+}

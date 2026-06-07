@@ -9,15 +9,14 @@ interface ShortcutBinding {
 }
 
 const defaultShortcuts: ShortcutBinding[] = [
-  { id: 'new_task', label: '新建任务', keys: 'Ctrl+N', defaultKeys: 'Ctrl+N' },
-  { id: 'search', label: '搜索', keys: 'Ctrl+F', defaultKeys: 'Ctrl+F' },
   { id: 'tomato', label: '开始/暂停番茄钟', keys: 'Ctrl+T', defaultKeys: 'Ctrl+T' },
   { id: 'theme', label: '切换主题', keys: 'Ctrl+D', defaultKeys: 'Ctrl+D' },
-  { id: 'hide_window', label: '显示/隐藏窗口', keys: 'Ctrl+Shift+H', defaultKeys: 'Ctrl+Shift+H' }
+  { id: 'hide_window', label: '显示/隐藏窗口', keys: 'Ctrl+Shift+H', defaultKeys: 'Ctrl+Shift+H' },
+  { id: 'toggle_widget', label: '待办组件', keys: 'Ctrl+G', defaultKeys: 'Ctrl+G' }
 ]
 
 export const useSettingsStore = defineStore('settings', () => {
-  type ThemeKey = 'light' | 'dark' | 'transparent-dark' | 'transparent-light'
+  type ThemeKey = 'light' | 'dark' | 'hermes' | 'transparent-dark' | 'transparent-light'
   const theme = ref<ThemeKey>('light')
   const settings = ref<Record<string, string>>({})
 
@@ -89,7 +88,7 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   function toggleTheme() {
-    const order: ThemeKey[] = ['light', 'dark', 'transparent-dark', 'transparent-light']
+    const order: ThemeKey[] = ['light', 'dark', 'hermes', 'transparent-dark', 'transparent-light']
     const idx = order.indexOf(theme.value)
     setSetting('theme', order[(idx + 1) % order.length])
   }

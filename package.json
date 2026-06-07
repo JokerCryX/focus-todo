@@ -53,6 +53,14 @@
       {
         "from": "build/icons",
         "to": "icons"
+      },
+      {
+        "from": "public/audio",
+        "to": "audio"
+      },
+      {
+        "from": "sound",
+        "to": "sound"
       }
     ],
     "win": {

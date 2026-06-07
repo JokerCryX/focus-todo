@@ -176,6 +176,7 @@ function onMainClick(e: MouseEvent) {
   flex: 1;
   display: flex;
   overflow: hidden;
+  position: relative;
 }
 
 .content-scroll {

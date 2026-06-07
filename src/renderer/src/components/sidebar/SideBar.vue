@@ -11,6 +11,10 @@
         <span class="icon">🧩</span>
         <span>{{ $t('nav.widget') }}</span>
       </button>
+      <router-link to="/sticky-notes" class="sidebar-item" active-class="active">
+        <span class="icon">🗒️</span>
+        <span>{{ $t('nav.stickyNotes') }}</span>
+      </router-link>
       <router-link to="/statistics" class="sidebar-item" active-class="active">
         <span class="icon">📊</span>
         <span>{{ $t('nav.statistics') }}</span>

@@ -35,6 +35,7 @@ const api = {
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
     maximize: () => ipcRenderer.invoke('window:maximize'),
+    isMaximized: () => ipcRenderer.invoke('window:isMaximized'),
     close: () => ipcRenderer.invoke('window:close'),
     setAlwaysOnTop: (flag: boolean) => ipcRenderer.invoke('window:setAlwaysOnTop', flag),
     isAlwaysOnTop: () => ipcRenderer.invoke('window:isAlwaysOnTop'),
@@ -96,10 +97,20 @@ const api = {
     startResize: (direction: string) => ipcRenderer.send('widget:startResize', direction),
     stopResize: () => ipcRenderer.send('widget:stopResize')
   },
+  stickyNote: {
+    list: () => ipcRenderer.invoke('stickyNote:list'),
+    get: (noteId: string) => ipcRenderer.invoke('stickyNote:get', noteId),
+    create: (input: { color?: string }) => ipcRenderer.invoke('stickyNote:create', input),
+    update: (noteId: string, changes: { content?: string; color?: string }) => ipcRenderer.invoke('stickyNote:update', noteId, changes),
+    remove: (noteId: string) => ipcRenderer.invoke('stickyNote:remove', noteId),
+    toWidget: (noteId: string) => ipcRenderer.invoke('stickyNote:toWidget', noteId),
+    fromWidget: (noteId: string) => ipcRenderer.invoke('stickyNote:fromWidget', noteId)
+  },
   sound: {
     list: () => ipcRenderer.invoke('sound:list'),
     play: (file: string) => ipcRenderer.invoke('sound:play', file),
-    buffer: (file: string) => ipcRenderer.invoke('sound:buffer', file)
+    buffer: (file: string) => ipcRenderer.invoke('sound:buffer', file),
+    audioBuffer: (file: string) => ipcRenderer.invoke('sound:audioBuffer', file)
   },
   popup: {
     openTask: (taskId: string, options?: { mode?: string, dueDate?: number }) => ipcRenderer.invoke('popup:openTask', taskId, options),

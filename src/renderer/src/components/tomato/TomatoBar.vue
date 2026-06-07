@@ -81,10 +81,10 @@
 
         <!-- 白噪音 -->
         <div class="noise-wrapper">
-          <button class="ctrl-btn noise-btn" @click="showNoise = !showNoise" :title="$t('tomato.whiteNoise')">
-            <svg width="14" height="14" viewBox="0 0 16 16"><path d="M2 8h2l3-4v8l3-4h2M12 6v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="ctrl-btn noise-btn" :class="{ 'noise-playing': noisePlaying }" @click="noisePlaying = !noisePlaying" :title="$t('tomato.whiteNoise')">
+            <svg v-if="!noisePlaying" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13 2.5v8.27a2.5 2.5 0 1 1-1.5-2.29V4.15L6.5 5.35v6.42a2.5 2.5 0 1 1-1.5-2.29V3.5l8-1.5z"/></svg>
+            <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M13 1.5v8.27a2.5 2.5 0 1 1-1.5-2.29V3.15L6.5 4.35v6.42a2.5 2.5 0 1 1-1.5-2.29V2.5l8-1.5z"/><path d="M14 5.5v5.77a2 2 0 1 1-1.2-1.83V5.5H14z"/></svg>
           </button>
-          <NoisePanel v-if="showNoise" @close="showNoise = false" />
         </div>
       </div>
     </div>
@@ -92,16 +92,39 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useTomatoStore } from '@/stores/tomato'
-import NoisePanel from './NoisePanel.vue'
 
 const { t } = useI18n()
 
 const tomatoStore = useTomatoStore()
 const ringC = 2 * Math.PI * 25
-const showNoise = ref(false)
+
+// 白噪音播放
+const noisePlaying = ref(false)
+let noiseAudio: HTMLAudioElement | null = null
+
+watch(noisePlaying, async (playing) => {
+  try {
+    if (playing) {
+      if (!noiseAudio) {
+        noiseAudio = new Audio('local-audio:///fire.mp3')
+        noiseAudio.loop = true
+        noiseAudio.volume = 0.5
+        noiseAudio.addEventListener('error', () => {
+          console.error('[Noise] audio error:', noiseAudio?.error)
+        })
+      }
+      await noiseAudio.play()
+    } else {
+      noiseAudio?.pause()
+    }
+  } catch (e) {
+    console.error('[Noise] error:', e)
+    noisePlaying.value = false
+  }
+})
 
 const durOptions = computed(() => [
   { key: 'focus' as const, label: t('tomato.focus'), value: tomatoStore.focusDuration },
@@ -147,6 +170,8 @@ onUnmounted(() => {
   border-top: 1px solid var(--border-primary);
   user-select: none;
   overflow: visible;
+  position: relative;
+  z-index: 201;
 }
 
 /* 进度条 */
@@ -159,16 +184,16 @@ onUnmounted(() => {
 
 .progress-fill {
   height: 100%;
-  background: #00BFA5;
+  background: var(--tomato-focus);
   transition: width 1s linear;
   border-radius: 0 2px 2px 0;
 }
 
-.progress-fill.shortBreak { background: #66BB6A; }
-.progress-fill.longBreak { background: #FFA726; }
+.progress-fill.shortBreak { background: var(--tomato-short); }
+.progress-fill.longBreak { background: var(--tomato-long); }
 
 .tomato-bar.active .progress-track {
-  box-shadow: 0 1px 8px rgba(0, 191, 165, 0.15);
+  box-shadow: 0 1px 8px rgba(var(--tomato-focus-rgb), 0.15);
 }
 
 /* 主体 */
@@ -181,7 +206,7 @@ onUnmounted(() => {
 }
 
 .tomato-bar.active .bar-body {
-  background: linear-gradient(90deg, rgba(0, 191, 165, 0.05) 0%, transparent 50%);
+  background: linear-gradient(90deg, rgba(var(--tomato-focus-rgb), 0.05) 0%, transparent 50%);
 }
 
 /* 左区：计时器 */
@@ -210,24 +235,24 @@ onUnmounted(() => {
 }
 
 .ring-fg {
-  stroke: #00BFA5;
+  stroke: var(--tomato-focus);
   stroke-linecap: round;
   transition: stroke-dashoffset 1s linear;
 }
 
-.ring-fg.shortBreak { stroke: #66BB6A; }
-.ring-fg.longBreak { stroke: #FFA726; }
+.ring-fg.shortBreak { stroke: var(--tomato-short); }
+.ring-fg.longBreak { stroke: var(--tomato-long); }
 
 .ring-wrap.focus {
-  filter: drop-shadow(0 0 6px rgba(0, 191, 165, 0.25));
+  filter: drop-shadow(0 0 6px rgba(var(--tomato-focus-rgb), 0.25));
 }
 
 .ring-wrap.shortBreak {
-  filter: drop-shadow(0 0 6px rgba(102, 187, 106, 0.2));
+  filter: drop-shadow(0 0 6px rgba(var(--tomato-short-rgb), 0.2));
 }
 
 .ring-wrap.longBreak {
-  filter: drop-shadow(0 0 6px rgba(255, 167, 38, 0.2));
+  filter: drop-shadow(0 0 6px rgba(var(--tomato-long-rgb), 0.2));
 }
 
 .ring-icon {
@@ -250,14 +275,14 @@ onUnmounted(() => {
 .digits {
   font-size: 36px;
   font-weight: 800;
-  color: #00BFA5;
+  color: var(--tomato-focus);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
   line-height: 1;
 }
 
-.digits.shortBreak { color: #66BB6A; }
-.digits.longBreak { color: #FFA726; }
+.digits.shortBreak { color: var(--tomato-short); }
+.digits.longBreak { color: var(--tomato-long); }
 .digits.idle { color: var(--text-secondary); }
 
 .phase {
@@ -267,7 +292,7 @@ onUnmounted(() => {
   letter-spacing: 0.06em;
 }
 
-.phase.focus { color: #00897B; }
+.phase.focus { color: var(--tomato-accent); }
 .phase.shortBreak { color: #43A047; }
 .phase.longBreak { color: #F57C00; }
 
@@ -357,7 +382,7 @@ onUnmounted(() => {
   padding: 12px 24px;
   border: none;
   border-radius: var(--radius-md);
-  background: #00897B;
+  background: var(--tomato-accent);
   color: white;
   font-size: var(--font-sm);
   font-weight: 600;
@@ -367,8 +392,8 @@ onUnmounted(() => {
 }
 
 .start-btn:hover {
-  background: #00796B;
-  box-shadow: 0 2px 12px rgba(0, 137, 123, 0.3);
+  background: var(--tomato-accent-hover);
+  box-shadow: 0 2px 12px rgba(var(--tomato-accent-rgb), 0.3);
 }
 
 .start-btn:active {
@@ -397,8 +422,8 @@ onUnmounted(() => {
 }
 
 .ctrl-btn:hover {
-  border-color: #00897B;
-  color: #00897B;
+  border-color: var(--tomato-accent);
+  color: var(--tomato-accent);
 }
 
 .ctrl-btn.main-ctrl {
@@ -411,23 +436,29 @@ onUnmounted(() => {
 }
 
 .ctrl-btn.main-ctrl:hover {
-  box-shadow: 0 0 0 2px #00897B;
-  color: #00897B;
+  box-shadow: 0 0 0 2px var(--tomato-accent);
+  color: var(--tomato-accent);
 }
 
 .ctrl-btn.main-ctrl.playing {
-  background: #00897B;
+  background: var(--tomato-accent);
   color: white;
-  box-shadow: 0 2px 10px rgba(0, 137, 123, 0.3);
+  box-shadow: 0 2px 10px rgba(var(--tomato-accent-rgb), 0.3);
 }
 
 .ctrl-btn.main-ctrl.playing:hover {
-  background: #00796B;
-  box-shadow: 0 2px 14px rgba(0, 137, 123, 0.4);
+  background: var(--tomato-accent-hover);
+  box-shadow: 0 2px 14px rgba(var(--tomato-accent-rgb), 0.4);
 }
 
 .ctrl-btn.danger:hover {
   border-color: var(--danger);
   color: var(--danger);
+}
+
+.ctrl-btn.noise-playing {
+  border-color: var(--tomato-accent);
+  color: var(--tomato-accent);
+  background: rgba(var(--tomato-accent-rgb), 0.08);
 }
 </style>

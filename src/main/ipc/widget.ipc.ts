@@ -1,6 +1,6 @@
 import { ipcMain, BrowserWindow } from 'electron'
 import { WidgetDao } from '../database/widget.dao'
-import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, getMainWindow, isWidgetOpen, broadcastToWidgets, findWidgetIdByWebContents, startWidgetResize, stopWidgetResize } from '../widget-manager'
+import { createWidgetWindow, closeWidgetWindow, sendToMainWindow, getMainWindow, isWidgetOpen, isWidgetVisible, toggleTodoWidget, broadcastToWidgets, findWidgetIdByWebContents, startWidgetResize, stopWidgetResize } from '../widget-manager'
 import { showWindow } from '../window-utils'
 
 export function registerWidgetIPC(dao: WidgetDao): void {
@@ -34,26 +34,13 @@ export function registerWidgetIPC(dao: WidgetDao): void {
   })
 
   ipcMain.handle('widget:toggle', () => {
-    const widgets = dao.list().filter(w => w.type !== 'calendar')
-    if (widgets.length === 0) {
-      const record = dao.create({ type: 'todo' })
-      createWidgetWindow(record.widget_id)
-      return true
-    }
-    const wid = widgets[0].widget_id
-    if (isWidgetOpen(wid)) {
-      closeWidgetWindow(wid)
-      return false
-    } else {
-      createWidgetWindow(wid)
-      return true
-    }
+    return toggleTodoWidget()
   })
 
   ipcMain.handle('widget:isOpen', () => {
     const widgets = dao.list().filter(w => w.type !== 'calendar')
     if (widgets.length === 0) return false
-    return isWidgetOpen(widgets[0].widget_id)
+    return isWidgetVisible(widgets[0].widget_id)
   })
 
   ipcMain.on('task:changed', (e) => {

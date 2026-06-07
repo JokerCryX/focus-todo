@@ -252,6 +252,10 @@ function formatCreated(ts: number): string {
 
 <style scoped>
 .editor-panel {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
   width: var(--editor-width);
   min-width: var(--editor-width);
   border-left: 1px solid var(--border-secondary);
@@ -259,13 +263,15 @@ function formatCreated(ts: number): string {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  z-index: 50;
 }
 
 .editor-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
+  height: 32px;
+  padding: 0 var(--spacing-lg);
   border-bottom: 1px solid var(--border-secondary);
 }
 
@@ -347,6 +353,7 @@ textarea {
   resize: vertical;
   min-height: 60px;
   color: var(--text-primary);
+  font-size: var(--font-sm);
   transition: border-color var(--transition-fast);
 }
 

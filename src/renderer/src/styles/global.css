@@ -1,6 +1,7 @@
 @import './variables.css';
 @import './themes/light.css';
 @import './themes/dark.css';
+@import './themes/hermes.css';
 @import './themes/transparent.css';
 @import './themes/transparent-light.css';
 
@@ -29,7 +30,8 @@ html, body {
   padding: 30px;
 }
 
-#widget-app {
+#widget-app,
+#sticky-widget-app {
   height: 100%;
   padding: 30px;
 }
@@ -95,14 +97,16 @@ textarea::placeholder {
   font-size: var(--font-xs) !important;
 }
 
-/* 深色/透黑模式：分组标题提亮 */
+/* 深色/透黑/Hermes模式：分组标题提亮 */
 html.dark .group-header,
-html.transparent-dark .group-header {
+html.transparent-dark .group-header,
+html.hermes .group-header {
   color: rgba(255, 255, 255, 0.85);
 }
 
 html.dark .group-header:hover,
-html.transparent-dark .group-header:hover {
+html.transparent-dark .group-header:hover,
+html.hermes .group-header:hover {
   color: rgba(255, 255, 255, 0.95);
 }
 
@@ -114,19 +118,77 @@ html.transparent-dark .editor-panel {
   --text-placeholder: rgba(255, 255, 255, 0.45);
 }
 
-/* 深色/透黑模式：快速添加输入框提亮 */
+/* Hermes 编辑器 — 暖米色面板，深墨绿文字，输入框用微透明区分 */
+html.hermes .editor-panel {
+  --text-primary: #041c1c;
+  --text-secondary: rgba(4, 28, 28, 0.65);
+  --text-tertiary: rgba(4, 28, 28, 0.45);
+  --text-placeholder: rgba(4, 28, 28, 0.3);
+  --border-primary: rgba(4, 28, 28, 0.1);
+  --border-secondary: rgba(4, 28, 28, 0.06);
+  --bg-input: rgba(4, 28, 28, 0.04);
+}
+
+/* Hermes 编辑器：标题和标签用主窗口背景色 */
+html.hermes .editor-panel .editor-title,
+html.hermes .editor-panel .field-label {
+  color: #041c1c;
+}
+
+html.hermes .editor-panel textarea,
+html.hermes .editor-panel select,
+html.hermes .editor-panel .title-input,
+html.hermes .editor-panel .tags-area,
+html.hermes .editor-panel .tag-input,
+html.hermes .editor-panel .priority-opt {
+  color: #041c1c;
+}
+
+html.hermes .editor-panel textarea::placeholder,
+html.hermes .editor-panel .tag-input::placeholder {
+  color: rgba(4, 28, 28, 0.3);
+}
+
+html.hermes .editor-panel textarea:focus,
+html.hermes .editor-panel select:focus,
+html.hermes .editor-panel .tags-area:focus-within {
+  border-color: #ffbd38;
+  box-shadow: 0 0 0 3px rgba(255, 189, 56, 0.15);
+}
+
+html.hermes .editor-panel .close-btn:hover {
+  background: rgba(4, 28, 28, 0.06);
+  color: #041c1c;
+}
+
+html.hermes .editor-panel .tag-item {
+  background: rgba(45, 212, 168, 0.12);
+  color: #2dd4a8;
+}
+
+html.hermes .editor-panel .priority-opt:hover {
+  border-color: rgba(4, 28, 28, 0.25);
+}
+
+/* 深色/透黑/Hermes模式：快速添加输入框提亮 */
 html.dark .quick-add,
-html.transparent-dark .quick-add {
+html.transparent-dark .quick-add,
+html.hermes .quick-add {
   --text-secondary: rgba(255, 255, 255, 0.85);
   --text-placeholder: rgba(255, 255, 255, 0.5);
 }
 
-/* 深色/透黑模式：任务卡片/组件描述提亮 */
+/* 深色/透黑/Hermes模式：任务卡片/组件描述提亮 */
 html.dark .task-card,
 html.transparent-dark .task-card,
 html.dark .task-item,
 html.transparent-dark .task-item {
   --desc-color: rgba(255, 255, 255, 0.7);
+}
+
+html.hermes .task-card,
+html.hermes .task-item {
+  --desc-color: rgba(255, 238, 209, 0.8);
 }
 
 /* 透白模式：对应位置文字改黑 */
@@ -168,4 +230,74 @@ html.transparent-light .task-item {
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* ═══════════════════════════════════════
+   Hermes 质感效果
+   ═══════════════════════════════════════ */
+
+/* ── 1. 噪点纹理 — 融入背景色 ── */
+html.hermes .app-layout,
+html.hermes .todo-widget {
+  position: relative;
+}
+
+html.hermes .app-layout::after,
+html.hermes .todo-widget::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  background-image:
+    repeating-conic-gradient(rgba(255, 230, 203, 0.1) 0% 25%, transparent 0% 50%);
+  background-size: 5px 5px;
+}
+
+/* ── 2. Warm Glow 暖光晕 ── */（已去除）
+
+/* ── 3. Arc Border 动画边框 ── */
+
+/* 任务卡片的 Arc Border 已移除 */
+
+/* 番茄钟运行态 arc border */
+html.hermes .tomato-bar.active .ring-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--hermes-arc-angle),
+    var(--arc-color, #ffbd38),
+    transparent 25%,
+    var(--arc-color, #ffbd38) 50%,
+    transparent 75%,
+    var(--arc-color, #ffbd38)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: hermes-arc-spin var(--arc-speed, 4s) linear infinite;
+  pointer-events: none;
+}
+
+/* ── 4. 层级与深度 ── */
+
+html.hermes .task-card,
+html.hermes .task-item {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 189, 56, 0.05);
+}
+
+html.hermes .editor-panel {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 1px rgba(45, 212, 168, 0.08);
+}
+
+html.hermes .popup-panel,
+html.hermes .dropdown-menu {
+  backdrop-filter: blur(16px);
+  background: var(--bg-glass);
 }

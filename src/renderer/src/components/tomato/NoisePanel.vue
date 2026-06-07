@@ -9,7 +9,7 @@
         v-for="scene in scenes"
         :key="scene.id"
         class="noise-card"
-        :class="{ playing: isPlaying(scene.id) }"
+        :class="{ playing: isPlaying(scene.id), loading: loadingId === scene.id }"
         @click="toggleScene(scene.id)"
       >
         <span class="noise-icon">{{ sceneIcons[scene.id] || '🎵' }}</span>
@@ -24,14 +24,14 @@
         </div>
       </div>
     </div>
-    <div v-if="playingTracks.length > 0" class="noise-footer">
+    <div v-if="hasPlaying" class="noise-footer">
       <button class="stop-all" @click="stopAll">{{ $t('tomato.stopAll') }}</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { reactive, computed } from 'vue'
 
 defineEmits<{ (e: 'close'): void }>()
 
@@ -41,49 +41,108 @@ const sceneIcons: Record<string, string> = {
   fire: '🔥', wind: '💨'
 }
 
-interface Scene { id: string; name: string }
-interface Track { id: string; volume: number }
+// 场景音频源文件名（对应 public/audio/ 下的文件）
+const audioFiles: Record<string, string> = {
+  fire: 'fire.mp3'
+}
 
-const scenes = ref<Scene[]>([])
-const playingTracks = ref<Track[]>([])
+// 静态场景列表
+const scenes = [
+  { id: 'cafe', name: '咖啡馆' },
+  { id: 'forest', name: '森林' },
+  { id: 'rain', name: '雨声' },
+  { id: 'ocean', name: '海浪' },
+  { id: 'thunder', name: '雷电' },
+  { id: 'train', name: '火车' },
+  { id: 'street', name: '街道' },
+  { id: 'cave', name: '洞穴' },
+  { id: 'fire', name: '火声' },
+  { id: 'wind', name: '风声' }
+]
 
-let stateHandler: ((...args: any[]) => void) | null = null
+// 模块级：Audio 实例 + Blob URL 缓存 + 播放状态（组件卸载后音频继续）
+const audioMap = new Map<string, HTMLAudioElement>()
+const blobUrlCache = new Map<string, string>()
+const playingState = reactive<Record<string, number>>({})
+const loadingId = computed(() => '')
 
-onMounted(async () => {
-  scenes.value = await window.api.noise.scenes()
-  playingTracks.value = await window.api.noise.playing()
-  stateHandler = (tracks: Track[]) => {
-    playingTracks.value = tracks
-  }
-  window.api.on('noise:state', stateHandler)
-})
-
-onUnmounted(() => {
-  stateHandler = null
-})
+const hasPlaying = computed(() => Object.keys(playingState).length > 0)
 
 function isPlaying(id: string): boolean {
-  return playingTracks.value.some(t => t.id === id)
+  return id in playingState
 }
 
 function getVolume(id: string): number {
-  return playingTracks.value.find(t => t.id === id)?.volume || 50
+  return playingState[id] ?? 50
 }
 
-async function toggleScene(id: string) {
-  if (isPlaying(id)) {
-    await window.api.noise.stop(id)
-  } else {
-    await window.api.noise.play(id, 50)
+// 通过 IPC 从主进程读取音频二进制，转 Blob URL
+async function loadAudioUrl(id: string): Promise<string | null> {
+  if (blobUrlCache.has(id)) return blobUrlCache.get(id)!
+  const file = audioFiles[id]
+  if (!file) return null
+  try {
+    const buffer: ArrayBuffer = await window.api.sound.audioBuffer(file)
+    console.log('[NoisePanel] audioBuffer loaded, size:', buffer.byteLength)
+    const blob = new Blob([buffer], { type: 'audio/mpeg' })
+    const url = URL.createObjectURL(blob)
+    console.log('[NoisePanel] blobUrl created:', url)
+    blobUrlCache.set(id, url)
+    return url
+  } catch (e) {
+    console.error('[NoisePanel] loadAudioUrl failed:', e)
+    return null
   }
 }
 
-async function setVolume(id: string, vol: string) {
-  await window.api.noise.volume(id, Number(vol))
+async function toggleScene(id: string) {
+  console.log('[NoisePanel] toggleScene:', id, 'isPlaying:', isPlaying(id))
+  if (isPlaying(id)) {
+    const audio = audioMap.get(id)
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+    delete playingState[id]
+  } else {
+    const url = await loadAudioUrl(id)
+    if (!url) {
+      console.warn('[NoisePanel] no audio for scene:', id)
+      return
+    }
+    let audio = audioMap.get(id)
+    if (!audio) {
+      audio = new Audio(url)
+      audio.loop = true
+      audioMap.set(id, audio)
+    }
+    audio.volume = 0.5
+    try {
+      await audio.play()
+      console.log('[NoisePanel] audio.play() succeeded for:', id)
+      playingState[id] = 50
+    } catch (e) {
+      console.error('[NoisePanel] audio.play() failed:', e)
+    }
+  }
 }
 
-async function stopAll() {
-  await window.api.noise.stopAll()
+function setVolume(id: string, vol: string) {
+  const v = Number(vol)
+  playingState[id] = v
+  const audio = audioMap.get(id)
+  if (audio) audio.volume = v / 100
+}
+
+function stopAll() {
+  for (const id of Object.keys(playingState)) {
+    const audio = audioMap.get(id)
+    if (audio) {
+      audio.pause()
+      audio.currentTime = 0
+    }
+    delete playingState[id]
+  }
 }
 </script>
 

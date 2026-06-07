@@ -11,7 +11,8 @@
         <svg width="10" height="1" viewBox="0 0 10 1"><rect fill="currentColor" width="10" height="1"/></svg>
       </button>
       <button class="titlebar-btn" @click="maximize" :title="$t('titlebar.maximize')">
-        <svg width="10" height="10" viewBox="0 0 10 10"><rect fill="none" stroke="currentColor" stroke-width="1" x="0.5" y="0.5" width="9" height="9"/></svg>
+        <svg v-if="!isMaximized" width="10" height="10" viewBox="0 0 10 10"><rect fill="none" stroke="currentColor" stroke-width="1" x="0.5" y="0.5" width="9" height="9"/></svg>
+        <svg v-else width="10" height="10" viewBox="0 0 10 10"><rect fill="none" stroke="currentColor" stroke-width="1" x="0.5" y="2.5" width="7" height="7"/><rect fill="var(--bg-titlebar)" stroke="currentColor" stroke-width="1" x="2.5" y="0.5" width="7" height="7"/></svg>
       </button>
       <button class="titlebar-btn close" @click="close" :title="$t('titlebar.close')">
         <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.2"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.2"/></svg>
@@ -31,6 +32,7 @@ import { useSettingsStore } from '@/stores/settings'
 
 const settingsStore = useSettingsStore()
 const isPinned = ref(false)
+const isMaximized = ref(false)
 
 const currentLogo = computed(() => {
   const t = settingsStore.theme
@@ -39,6 +41,7 @@ const currentLogo = computed(() => {
 
 onMounted(async () => {
   isPinned.value = await window.api.window.isAlwaysOnTop()
+  isMaximized.value = await window.api.window.isMaximized()
 })
 
 function togglePin() {
@@ -52,6 +55,9 @@ function minimize() {
 
 function maximize() {
   window.api.window.maximize()
+  setTimeout(async () => {
+    isMaximized.value = await window.api.window.isMaximized()
+  }, 50)
 }
 
 function close() {

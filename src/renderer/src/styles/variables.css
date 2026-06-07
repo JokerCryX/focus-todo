@@ -2,7 +2,7 @@
   --font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei UI', 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
   --sidebar-width: 224px;
-  --editor-width: 360px;
+  --editor-width: 300px;
   --titlebar-height: 38px;
 
   --radius-sm: 6px;
@@ -36,4 +36,15 @@
   --color-time-future: #34D399;
 
   --desc-color: var(--text-tertiary);
+
+  /* 番茄钟色系 */
+  --tomato-focus: #00BFA5;
+  --tomato-focus-rgb: 0, 191, 165;
+  --tomato-short: #66BB6A;
+  --tomato-short-rgb: 102, 187, 106;
+  --tomato-long: #FFA726;
+  --tomato-long-rgb: 255, 167, 38;
+  --tomato-accent: #00897B;
+  --tomato-accent-hover: #00796B;
+  --tomato-accent-rgb: 0, 137, 123;
 }

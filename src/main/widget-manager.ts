@@ -1,5 +1,6 @@
 import { BrowserWindow, screen } from 'electron'
 import { WidgetDao } from './database/widget.dao'
+import { StickyNoteDao } from './database/sticky-note.dao'
 import { getWebPreferences, loadWindowPage } from './window-utils'
 import { createAppIcon } from './tray'
 
@@ -77,10 +78,15 @@ function cancelAnimation(widgetId: string): void {
 
 let mainWindow: BrowserWindow | null = null
 let dao: WidgetDao | null = null
+let stickyNoteDao: StickyNoteDao | null = null
 
 export function initWidgetManager(mainWin: BrowserWindow, widgetDao: WidgetDao): void {
   mainWindow = mainWin
   dao = widgetDao
+}
+
+export function setStickyNoteDao(dao: StickyNoteDao): void {
+  stickyNoteDao = dao
 }
 
 export function createWidgetWindow(widgetId: string): void {
@@ -110,12 +116,18 @@ export function createWidgetWindow(widgetId: string): void {
     resizable: false,
     alwaysOnTop: !!record.always_on_top,
     skipTaskbar: true,
+    show: false,
     opacity: record.opacity / 100,
     icon: createAppIcon(),
     webPreferences: getWebPreferences()
   })
 
-  loadWindowPage(win, 'widget', { widgetId })
+  win.on('ready-to-show', () => {
+    win.show()
+  })
+
+  const htmlPage = record.type === 'sticky' ? 'sticky-widget' : 'widget'
+  loadWindowPage(win, htmlPage, { widgetId })
 
   const dockState: DockState = { isDocked: false, isExpanded: false, savedBounds: null, pollTimer: null, lastAction: 0 }
   dockStates.set(widgetId, dockState)
@@ -192,6 +204,17 @@ export function createWidgetWindow(widgetId: string): void {
     stopPoll(dockState)
     widgetWindows.delete(widgetId)
     dockStates.delete(widgetId)
+    // 便利贴小组件关闭时，重置 is_widget 状态并清理 widget 记录
+    if (record.type === 'sticky' && stickyNoteDao && dao) {
+      try {
+        const config = JSON.parse(record.config || '{}')
+        if (config.note_id) {
+          stickyNoteDao.update(config.note_id, { is_widget: 0 })
+          dao.remove(widgetId)
+          sendToMainWindow('stickyNote:changed', config.note_id)
+        }
+      } catch { /* ignore */ }
+    }
   })
 
   win.webContents.on('render-process-gone', (_e, details) => {
@@ -266,6 +289,38 @@ export function isWidgetOpen(widgetId: string): boolean {
   return widgetWindows.has(widgetId)
 }
 
+export function isWidgetVisible(widgetId: string): boolean {
+  const win = widgetWindows.get(widgetId)
+  return !!win && !win.isDestroyed() && !win.isMinimized()
+}
+
+/**
+ * 切换待办组件：首次创建，之后 minimize/restore（不销毁窗口，避免闪烁）
+ */
+export function toggleTodoWidget(): boolean {
+  if (!dao || !mainWindow) return false
+  const widgets = dao.list().filter(w => w.type !== 'calendar' && w.type !== 'sticky')
+  if (widgets.length === 0) {
+    const record = dao.create({ type: 'todo' })
+    createWidgetWindow(record.widget_id)
+    return true
+  }
+  const wid = widgets[0].widget_id
+  const win = widgetWindows.get(wid)
+  if (!win || win.isDestroyed()) {
+    createWidgetWindow(wid)
+    return true
+  }
+  if (win.isMinimized()) {
+    win.restore()
+    win.focus()
+    return true
+  } else {
+    win.minimize()
+    return false
+  }
+}
+
 export function broadcastToWidgets(channel: string, ...args: any[]): void {
   for (const win of widgetWindows.values()) {
     if (!win.isDestroyed()) {
@@ -276,14 +331,21 @@ export function broadcastToWidgets(channel: string, ...args: any[]): void {
 
 export function restoreAllWidgets(): void {
   if (!dao) return
-  const widgets = dao.list().filter(w => w.type !== 'calendar')
-  if (widgets.length > 1) {
-    for (let i = 1; i < widgets.length; i++) {
-      dao.remove(widgets[i].widget_id)
+  const allWidgets = dao.list()
+  // 恢复 todo 小组件（保持原有逻辑：限制1个）
+  const todoWidgets = allWidgets.filter(w => w.type !== 'calendar' && w.type !== 'sticky')
+  if (todoWidgets.length > 1) {
+    for (let i = 1; i < todoWidgets.length; i++) {
+      dao.remove(todoWidgets[i].widget_id)
     }
   }
-  if (widgets.length > 0) {
-    createWidgetWindow(widgets[0].widget_id)
+  if (todoWidgets.length > 0) {
+    createWidgetWindow(todoWidgets[0].widget_id)
+  }
+  // 恢复 sticky 便利贴小组件（不限制数量）
+  const stickyWidgets = allWidgets.filter(w => w.type === 'sticky')
+  for (const sw of stickyWidgets) {
+    createWidgetWindow(sw.widget_id)
   }
 }
 
@@ -310,6 +372,8 @@ export function startWidgetResize(widgetId: string, direction: string): void {
     const cursor = screen.getCursorScreenPoint()
     const dx = cursor.x - startCursor.x
     const dy = cursor.y - startCursor.y
+    if (Math.abs(dx) <= 2 && Math.abs(dy) <= 2) return
+
     const b = { ...startBounds }
     const minW = 280, minH = 200
 

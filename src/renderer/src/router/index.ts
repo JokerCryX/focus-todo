@@ -13,6 +13,7 @@ const router = createRouter({
     { path: '/settings', name: 'settings', component: () => import('@/views/SettingsView.vue') },
     { path: '/calendar', name: 'calendar', component: () => import('@/views/CalendarView.vue') },
     { path: '/notes', name: 'notes', component: () => import('@/views/NoteView.vue') },
+    { path: '/sticky-notes', name: 'stickyNotes', component: () => import('@/views/StickyNotesView.vue') },
     { path: '/search', name: 'search', component: () => import('@/views/SearchView.vue') },
     { path: '/statistics', name: 'statistics', component: () => import('@/views/StatisticsView.vue') }
   ]
