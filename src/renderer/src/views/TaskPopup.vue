@@ -276,7 +276,11 @@ function closePopup() {
 
 <style scoped>
 .task-popup {
-  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
   background: var(--bg-primary);
@@ -284,6 +288,7 @@ function closePopup() {
   font-family: var(--font-family);
   font-size: var(--font-sm);
   border-radius: 9px;
+  border: 1px solid var(--text-primary);
   overflow: hidden;
   box-shadow: var(--shadow-window, none);
 }

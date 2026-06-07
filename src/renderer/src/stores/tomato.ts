@@ -87,7 +87,6 @@ export const useTomatoStore = defineStore('tomato', () => {
 
   function reset() {
     stopTimer()
-    phase.value = 'idle'
     remainingSeconds.value = totalSeconds.value
   }
 
@@ -98,6 +97,8 @@ export const useTomatoStore = defineStore('tomato', () => {
 
   async function onPhaseComplete() {
     if (phase.value === 'focus') {
+      const taskStore = useTaskStore()
+      taskStore.playSound('sound_reminder')
       completedCount.value++
       await recordTomato()
       await refreshStats()

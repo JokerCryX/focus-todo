@@ -130,10 +130,20 @@ async function loadSoundSettings() {
   soundReminder.value = (await window.api.settings.get('sound_reminder')) || ''
 }
 
-function saveSound(key: string, value: string) {
-  window.api.settings.set(key, value)
+async function saveSound(key: string, value: string) {
+  await window.api.settings.set(key, value)
   taskStore.loadSoundCache()
-  if (value) window.api.sound.play(value)
+  if (!value) return
+  try {
+    const buf = await window.api.sound.buffer(value) as ArrayBuffer
+    const blob = new Blob([buf], { type: 'audio/wav' })
+    const url = URL.createObjectURL(blob)
+    const audio = new Audio(url)
+    audio.play().catch(() => {})
+    audio.addEventListener('ended', () => URL.revokeObjectURL(url))
+  } catch {
+    window.api.sound.play(value)
+  }
 }
 
 loadSoundSettings()

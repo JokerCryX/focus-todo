@@ -164,6 +164,7 @@ export const useTaskStore = defineStore('task', () => {
     batchComplete,
     batchRemove,
     batchMoveCategory,
-    loadSoundCache
+    loadSoundCache,
+    playSound
   }
 })
