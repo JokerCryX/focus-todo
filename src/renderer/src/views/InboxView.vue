@@ -11,15 +11,12 @@
           {{ $t('inbox.planned') }} ({{ plannedTasks.length }})
         </div>
         <Transition name="collapse">
-          <div v-show="plannedOpen" class="drag-list" @dragover.prevent @drop="onDropPlanned">
+          <div v-show="plannedOpen" class="drag-list">
             <div
               v-for="(task, index) in plannedTasks"
               :key="task.task_id"
-              draggable="true"
-              @dragstart="onDragStart($event, index, 'planned')"
-              @dragover="onDragOver($event, index, 'planned')"
-              @dragend="onDragEnd"
-              :class="{ 'drag-over': dragOverIndex === index && dragSource === 'planned' }"
+              @mousedown="onItemMouseDown($event, index)"
+              :class="{ 'drag-over': dragOverIndex === index && dragIndex !== index, 'drag-after': dragOverIndex === plannedTasks.length && index === plannedTasks.length - 1, 'dragging': dragIndex === index }"
             >
               <TaskCard :task="task" />
             </div>
@@ -54,9 +51,10 @@ const taskStore = useTaskStore()
 const plannedOpen = ref(true)
 const readyOpen = ref(true)
 
-const dragSource = ref<'planned' | null>(null)
 const dragIndex = ref(-1)
 const dragOverIndex = ref(-1)
+let dragStartY = 0
+let dragStarted = false
 
 const plannedTasks = computed(() =>
   taskStore.tasks.filter(t => !t.due_date)
@@ -72,38 +70,51 @@ function loadTasks() {
 
 onMounted(loadTasks)
 
-function onDragStart(e: DragEvent, index: number, source: 'planned') {
-  dragSource.value = source
+function onItemMouseDown(e: MouseEvent, index: number) {
+  if (e.button !== 0) return
   dragIndex.value = index
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+  dragStartY = e.clientY
+  dragStarted = false
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
 }
 
-function onDragOver(e: DragEvent, index: number, source: 'planned') {
-  if (dragSource.value !== source) return
-  e.preventDefault()
-  dragOverIndex.value = index
+function onMouseMove(e: MouseEvent) {
+  if (dragIndex.value === -1) return
+  if (!dragStarted && Math.abs(e.clientY - dragStartY) < 5) return
+  if (!dragStarted) dragStarted = true
+  const container = document.querySelector('.drag-list')
+  if (!container) return
+  const items = [...container.querySelectorAll('.drag-list > div')]
+  const mouseY = e.clientY
+  let target = plannedTasks.value.length
+  for (let i = 0; i < items.length; i++) {
+    const rect = items[i].getBoundingClientRect()
+    if (mouseY < rect.top + rect.height / 2) {
+      target = i
+      break
+    }
+  }
+  dragOverIndex.value = target
 }
 
-function onDragEnd() {
-  dragSource.value = null
+async function onMouseUp() {
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+  if (dragIndex.value !== -1 && dragStarted && dragOverIndex.value !== -1 && dragIndex.value !== dragOverIndex.value) {
+    const reordered = [...plannedTasks.value]
+    const [moved] = reordered.splice(dragIndex.value, 1)
+    const insertIndex = dragOverIndex.value > dragIndex.value ? dragOverIndex.value - 1 : dragOverIndex.value
+    reordered.splice(insertIndex, 0, moved)
+    const updates: Promise<any>[] = []
+    for (let i = 0; i < reordered.length; i++) {
+      updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
+    }
+    await Promise.all(updates)
+  }
   dragIndex.value = -1
   dragOverIndex.value = -1
-}
-
-async function onDropPlanned() {
-  if (dragSource.value !== 'planned' || dragIndex.value === dragOverIndex.value) {
-    onDragEnd()
-    return
-  }
-  const reordered = [...plannedTasks.value]
-  const [moved] = reordered.splice(dragIndex.value, 1)
-  reordered.splice(dragOverIndex.value, 0, moved)
-  const updates: Promise<any>[] = []
-  for (let i = 0; i < reordered.length; i++) {
-    updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
-  }
-  await Promise.all(updates)
-  onDragEnd()
+  dragStarted = false
   loadTasks()
 }
 </script>
@@ -181,12 +192,21 @@ async function onDropPlanned() {
   opacity: 0;
 }
 
-.drag-list > [draggable="true"] {
+.drag-list > div {
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.drag-list > [draggable="true"].drag-over {
+.drag-list > div.drag-over {
   border-top: 2px solid var(--accent-primary);
   padding-top: 6px;
+}
+
+.drag-list > div.drag-after {
+  border-bottom: 2px solid var(--accent-primary);
+  padding-bottom: 6px;
+}
+
+.drag-list > div.dragging {
+  opacity: 0.4;
 }
 </style>

@@ -87,19 +87,16 @@
       <div class="resize-handle resize-nw" @mousedown="startResize('nw', $event)"></div>
       <div class="resize-handle resize-se" @mousedown="startResize('se', $event)"></div>
       <div class="resize-handle resize-sw" @mousedown="startResize('sw', $event)"></div>
-      <TransitionGroup name="task-list" tag="div" class="task-list-inner" @dragover.prevent @drop="onDrop">
+      <TransitionGroup name="task-list" tag="div" class="task-list-inner">
         <div
           v-for="(task, index) in tasks"
           :key="task.task_id"
           class="task-item"
-          :class="{ completed: task.complete, [`priority-${task.priority}`]: true, expanded: expandedTaskId === task.task_id, 'drag-over': dragOverIndex === index }"
+          :class="{ completed: task.complete, [`priority-${task.priority}`]: true, expanded: expandedTaskId === task.task_id, 'drag-over': dragOverIndex === index && dragIndex !== index, 'drag-after': dragOverIndex === tasks.length && index === tasks.length - 1, 'dragging': dragIndex === index }"
           :style="{ '--i': index }"
-          :draggable="currentView === 'inbox'"
+          @mousedown="onItemMouseDown($event, index)"
           @click="toggleExpand(task)"
           @contextmenu.prevent="onTaskContextMenu($event, task)"
-          @dragstart="onDragStart($event, index)"
-          @dragover="onDragOver($event, index)"
-          @dragend="onDragEnd"
         >
           <div class="priority-bar"></div>
           <button class="task-check" :class="{ checked: task.complete }" @click.stop="toggleTask(task)">
@@ -166,6 +163,9 @@ const editingTaskId = ref<string | null>(null)
 const currentTheme = ref('light')
 const dragIndex = ref(-1)
 const dragOverIndex = ref(-1)
+const isDragging = ref(false)
+let dragStartY = 0
+let dragStarted = false
 
 const themes = [
   { value: 'light', label: t('settings.light'), color: '#f8f9fa' },
@@ -340,37 +340,60 @@ function windowClose() {
   window.close()
 }
 
-function onDragStart(e: DragEvent, index: number) {
+function onItemMouseDown(e: MouseEvent, index: number) {
+  if (e.button !== 0) return // 只响应左键
+  if (currentView.value !== 'inbox') return
+  // 如果点击的是 checkbox 按钮则忽略
+  if ((e.target as HTMLElement).closest('.task-check')) return
   dragIndex.value = index
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+  dragStartY = e.clientY
+  dragStarted = false
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
 }
 
-function onDragOver(e: DragEvent, index: number) {
-  e.preventDefault()
-  dragOverIndex.value = index
+function onMouseMove(e: MouseEvent) {
+  if (dragIndex.value === -1) return
+  if (!dragStarted && Math.abs(e.clientY - dragStartY) < 5) return
+  if (!dragStarted) {
+    dragStarted = true
+    isDragging.value = true
+  }
+  // 根据鼠标 Y 坐标计算目标位置
+  const container = document.querySelector('.task-list-inner')
+  if (!container) return
+  const items = [...container.querySelectorAll('.task-item')]
+  const mouseY = e.clientY
+  let target = tasks.value.length
+  for (let i = 0; i < items.length; i++) {
+    const rect = items[i].getBoundingClientRect()
+    if (mouseY < rect.top + rect.height / 2) {
+      target = i
+      break
+    }
+  }
+  dragOverIndex.value = target
 }
 
-function onDragEnd() {
+async function onMouseUp() {
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+  if (dragIndex.value !== -1 && dragStarted && dragOverIndex.value !== -1 && dragIndex.value !== dragOverIndex.value) {
+    const reordered = [...tasks.value]
+    const [moved] = reordered.splice(dragIndex.value, 1)
+    const insertIndex = dragOverIndex.value > dragIndex.value ? dragOverIndex.value - 1 : dragOverIndex.value
+    reordered.splice(insertIndex, 0, moved)
+    const updates: Promise<any>[] = []
+    for (let i = 0; i < reordered.length; i++) {
+      updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
+    }
+    await Promise.all(updates)
+    window.api.send('task:changed')
+  }
   dragIndex.value = -1
   dragOverIndex.value = -1
-}
-
-async function onDrop() {
-  if (dragIndex.value === -1 || dragIndex.value === dragOverIndex.value) {
-    onDragEnd()
-    return
-  }
-  const reordered = [...tasks.value]
-  const [moved] = reordered.splice(dragIndex.value, 1)
-  reordered.splice(dragOverIndex.value, 0, moved)
-  const updates: Promise<any>[] = []
-  for (let i = 0; i < reordered.length; i++) {
-    updates.push(window.api.task.update({ task_id: reordered[i].task_id, sort_order: i }))
-  }
-  await Promise.all(updates)
-  onDragEnd()
-  loadTasks()
-  window.api.send('task:changed')
+  dragStarted = false
+  isDragging.value = false
 }
 
 type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
@@ -836,6 +859,14 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
 
 .task-item.drag-over {
   border-top: 2px solid var(--accent-primary);
+}
+
+.task-item.drag-after {
+  border-bottom: 2px solid var(--accent-primary);
+}
+
+.task-item.dragging {
+  opacity: 0.4;
 }
 
 /* ── Task content ── */
