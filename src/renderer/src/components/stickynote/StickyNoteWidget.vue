@@ -30,7 +30,9 @@
         ref="textareaEl"
         v-model="content"
         :placeholder="$t('stickyNotes.placeholder')"
+        :style="{ fontSize: fontSize + 'px' }"
         @input="onInput"
+        @wheel.prevent="onWheelFontSize"
       ></textarea>
     </div>
   </div>
@@ -43,6 +45,7 @@ const content = ref('')
 const noteColor = ref('#FFF9C4')
 const isPinned = ref(false)
 const textareaEl = ref<HTMLTextAreaElement>()
+const fontSize = ref(14)
 
 async function applyTheme() {
   const theme = (await window.api.settings.get('theme')) || 'light'
@@ -55,6 +58,7 @@ function onThemeChanged(theme?: string) {
 }
 
 let noteId = ''
+let widgetId = ''
 let saveTimer: ReturnType<typeof setTimeout> | null = null
 
 const darkColorMap: Record<string, string> = {
@@ -68,7 +72,7 @@ const darkColor = computed(() => darkColorMap[noteColor.value] || noteColor.valu
 
 async function loadNote() {
   const params = new URLSearchParams(window.location.search)
-  const widgetId = params.get('widgetId')
+  widgetId = params.get('widgetId') || ''
   if (!widgetId) return
 
   const widget = await window.api.widget.getConfig(widgetId)
@@ -86,6 +90,10 @@ async function loadNote() {
     content.value = note.content
     noteColor.value = note.color
   }
+
+  // 从 app_settings 读取保存的字号
+  const savedFontSize = await window.api.settings.get(`sticky_font_${noteId}`)
+  if (savedFontSize) fontSize.value = Number(savedFontSize)
 }
 
 function onInput() {
@@ -104,6 +112,10 @@ async function saveNote() {
 async function togglePin() {
   isPinned.value = !isPinned.value
   await window.api.window.setAlwaysOnTop(isPinned.value)
+  // 同步更新数据库，让 setStickyTopMode 知道用户是否手动置顶
+  if (widgetId) {
+    await window.api.widget.update(widgetId, { always_on_top: isPinned.value ? 1 : 0 })
+  }
 }
 
 async function backToList() {
@@ -112,6 +124,20 @@ async function backToList() {
     await window.api.stickyNote.fromWidget(noteId)
   }
   window.close()
+}
+
+let fontSizeTimer: ReturnType<typeof setTimeout> | null = null
+
+function onWheelFontSize(e: WheelEvent) {
+  const delta = e.deltaY < 0 ? 1 : -1
+  fontSize.value = Math.max(10, Math.min(60, fontSize.value + delta))
+  // 防抖保存字号到 app_settings
+  if (fontSizeTimer) clearTimeout(fontSizeTimer)
+  fontSizeTimer = setTimeout(() => {
+    if (noteId) {
+      window.api.settings.set(`sticky_font_${noteId}`, String(fontSize.value))
+    }
+  }, 500)
 }
 
 function windowClose() {
@@ -261,12 +287,12 @@ onUnmounted(() => {
   border: none;
   background: transparent;
   color: rgba(0, 0, 0, 0.8);
-  font-size: 14px;
   line-height: 1.6;
   resize: none;
   outline: none;
   font-family: var(--font-family);
   word-break: break-word;
+  transition: font-size 0.1s ease;
 }
 
 .sticky-content textarea::placeholder {

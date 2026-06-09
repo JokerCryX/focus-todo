@@ -32,6 +32,10 @@ const api = {
     set: (key: string, value: string) => ipcRenderer.invoke('settings:set', key, value),
     getAll: () => ipcRenderer.invoke('settings:getAll')
   },
+  autoStart: {
+    get: () => ipcRenderer.invoke('autoStart:get'),
+    set: (enabled: boolean) => ipcRenderer.invoke('autoStart:set', enabled)
+  },
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
     maximize: () => ipcRenderer.invoke('window:maximize'),

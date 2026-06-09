@@ -21,6 +21,13 @@
           <button :class="{ active: settingsStore.theme === 'transparent-dark' }" @click="settingsStore.setSetting('theme', 'transparent-dark')">{{ $t('settings.transparentDark') }}</button>
         </div>
       </div>
+      <div class="setting-item">
+        <span>{{ $t('settings.autoStartLabel') }}</span>
+        <label class="toggle-switch">
+          <input type="checkbox" v-model="autoStart" @change="saveAutoStart" />
+          <span class="toggle-track"></span>
+        </label>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -115,6 +122,7 @@ const tagStore = useTagStore()
 const exporting = ref(false)
 const importing = ref(false)
 const resetting = ref(false)
+const autoStart = ref(false)
 
 const soundFiles = ref<{ name: string; file: string }[]>([])
 const soundNew = ref('')
@@ -147,6 +155,15 @@ async function saveSound(key: string, value: string) {
 }
 
 loadSoundSettings()
+
+async function loadAutoStart() {
+  autoStart.value = await window.api.autoStart.get()
+}
+loadAutoStart()
+
+async function saveAutoStart() {
+  await window.api.autoStart.set(autoStart.value)
+}
 
 async function changeLang(lang: string) {
   await setLanguage(lang)
@@ -344,5 +361,47 @@ async function handleReset() {
 .setting-select:focus {
   border-color: var(--accent-primary);
   box-shadow: var(--shadow-accent);
+}
+
+/* ── Toggle switch ── */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.toggle-switch input {
+  display: none;
+}
+
+.toggle-track {
+  display: block;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--border-primary);
+  transition: background var(--transition-fast);
+  position: relative;
+}
+
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform var(--transition-fast);
+}
+
+.toggle-switch input:checked + .toggle-track {
+  background: var(--accent-primary);
+}
+
+.toggle-switch input:checked + .toggle-track::after {
+  transform: translateX(16px);
 }
 </style>

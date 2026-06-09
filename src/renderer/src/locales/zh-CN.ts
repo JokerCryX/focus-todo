@@ -59,6 +59,10 @@ export default {
     descPlaceholder: '添加描述...',
     reminderLabel: '提醒时间',
     reminderPlaceholder: '选择日期时间',
+    durationLabel: '持续时间',
+    durationToggle: '切换为持续时间模式',
+    durationStart: '开始时间',
+    durationEnd: '结束时间',
     categoryLabel: '分类',
     noCategory: '无分类',
     priorityLabel: '优先级',
@@ -180,7 +184,8 @@ export default {
     importFail: '导入失败：\n{errors}',
     resetConfirm1: '确定要重置所有数据？此操作不可撤销！',
     resetConfirm2: '再次确认：将删除所有任务、分类和设置，确定继续？',
-    resetSuccess: '数据已重置'
+    resetSuccess: '数据已重置',
+    autoStartLabel: '开机启动'
   },
 
   repeat: {

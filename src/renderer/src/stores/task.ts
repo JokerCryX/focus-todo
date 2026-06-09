@@ -74,14 +74,27 @@ export const useTaskStore = defineStore('task', () => {
     const cutoff = now - 60000
     const taskMap = new Map(tasks.value.map(t => [t.task_id, t]))
     for (const t of tasks.value) {
-      if (t.complete || !t.due_date) continue
-      if (t.due_date > now || t.due_date <= cutoff) continue
-      if (remindedIds.has(t.task_id)) continue
-      remindedIds.add(t.task_id)
-      playSound('sound_reminder')
+      if (t.complete) continue
+      // 提醒时间到达
+      const due = t.due_date
+      const durationEnd = (t as any).duration_end as number | null
+      if (due && !durationEnd) {
+        if (due <= now && due > cutoff && !remindedIds.has(t.task_id + '_due')) {
+          remindedIds.add(t.task_id + '_due')
+          playSound('sound_reminder')
+        }
+      }
+      // 持续时间结束到达
+      if (durationEnd) {
+        if (durationEnd <= now && durationEnd > cutoff && !remindedIds.has(t.task_id + '_end')) {
+          remindedIds.add(t.task_id + '_end')
+          playSound('sound_reminder')
+        }
+      }
     }
     for (const id of remindedIds) {
-      const task = taskMap.get(id)
+      const taskId = id.replace(/_(due|end)$/, '')
+      const task = taskMap.get(taskId)
       if (!task || task.complete) remindedIds.delete(id)
     }
   }

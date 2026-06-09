@@ -21,6 +21,7 @@ interface TaskRow {
   files: any[]
   created_at: number
   updated_at: number
+  duration_end: number | null
 }
 
 function rowToTask(row: any[]): TaskRow {
@@ -41,7 +42,8 @@ function rowToTask(row: any[]): TaskRow {
     subtasks: row[13] ? JSON.parse(row[13] as string) : null,
     files: JSON.parse((row[14] as string) || '[]'),
     created_at: row[15] as number,
-    updated_at: row[16] as number
+    updated_at: row[16] as number,
+    duration_end: (row[17] as number | null) ?? null
   }
 }
 
@@ -152,6 +154,7 @@ export class TaskDao {
     repeat_rule?: string | null
     subtasks?: any[] | null
     files?: any[]
+    duration_end?: number | null
   }): TaskRow {
     const fields: string[] = ['updated_at = ?']
     const params: any[] = [Date.now()]
@@ -169,6 +172,7 @@ export class TaskDao {
     if (input.repeat_rule !== undefined) { fields.push('repeat_rule = ?'); params.push(input.repeat_rule) }
     if (input.subtasks !== undefined) { fields.push('subtasks = ?'); params.push(input.subtasks ? JSON.stringify(input.subtasks) : null) }
     if (input.files !== undefined) { fields.push('files = ?'); params.push(JSON.stringify(input.files)) }
+    if (input.duration_end !== undefined) { fields.push('duration_end = ?'); params.push(input.duration_end) }
 
     params.push(input.task_id)
     this.db.run(`UPDATE tasks SET ${fields.join(', ')} WHERE task_id = ?`, params)
@@ -236,7 +240,7 @@ export class TaskDao {
       } else if (key === 'files') {
         fields.push('files = ?')
         params.push(JSON.stringify(value))
-      } else if (['title', 'description', 'due_date', 'reminder_time', 'category_id', 'priority', 'sort_order', 'complete', 'is_deleted', 'repeat_rule'].includes(key)) {
+      } else if (['title', 'description', 'due_date', 'reminder_time', 'category_id', 'priority', 'sort_order', 'complete', 'is_deleted', 'repeat_rule', 'duration_end'].includes(key)) {
         fields.push(`${key} = ?`)
         params.push(value)
       }

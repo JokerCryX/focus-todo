@@ -24,6 +24,7 @@
         :key="note.note_id"
         :note="note"
         @to-widget="onToWidget"
+        @from-widget="onFromWidget"
         @remove="onRemove"
         @update="onUpdate"
       />
@@ -65,6 +66,11 @@ async function createNote() {
 
 async function onToWidget(noteId: string) {
   await window.api.stickyNote.toWidget(noteId)
+  await loadNotes()
+}
+
+async function onFromWidget(noteId: string) {
+  await window.api.stickyNote.fromWidget(noteId)
   await loadNotes()
 }
 

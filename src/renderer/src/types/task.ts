@@ -16,6 +16,7 @@ export interface Task {
   files: Attachment[]
   created_at: number
   updated_at: number
+  duration_end: number | null
 }
 
 export interface SubTask {
@@ -57,6 +58,7 @@ export interface UpdateTaskInput {
   repeat_rule?: string | null
   subtasks?: SubTask[] | null
   files?: Attachment[]
+  duration_end?: number | null
 }
 
 export interface TaskFilter {

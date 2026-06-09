@@ -44,8 +44,14 @@ function registerWindowIPC(): void {
   ipcMain.handle('window:close', (e) => {
     BrowserWindow.fromWebContents(e.sender)?.close()
   })
-  ipcMain.handle('window:setAlwaysOnTop', (e, flag: boolean) => {
-    BrowserWindow.fromWebContents(e.sender)?.setAlwaysOnTop(flag)
+  ipcMain.handle('window:setAlwaysOnTop', (e, flag: boolean, level?: string) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) return
+    if (flag) {
+      win.setAlwaysOnTop(true, 'floating')
+    } else {
+      win.setAlwaysOnTop(false)
+    }
   })
   ipcMain.handle('window:isAlwaysOnTop', (e) => {
     return BrowserWindow.fromWebContents(e.sender)?.isAlwaysOnTop() ?? false

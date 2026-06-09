@@ -18,6 +18,12 @@
           @click.stop="$emit('toWidget', note.note_id)"
           :title="$t('stickyNotes.toWidget')"
         >+</button>
+        <button
+          v-else
+          class="action-btn back-btn"
+          @click.stop="$emit('fromWidget', note.note_id)"
+          :title="$t('stickyNotes.fromWidget')"
+        >↩</button>
         <button class="action-btn delete-btn" @click.stop="$emit('remove', note.note_id)">×</button>
       </div>
     </div>
@@ -46,6 +52,7 @@ interface StickyNote {
 const props = defineProps<{ note: StickyNote }>()
 const emit = defineEmits<{
   (e: 'toWidget', noteId: string): void
+  (e: 'fromWidget', noteId: string): void
   (e: 'remove', noteId: string): void
   (e: 'update', noteId: string, changes: { content?: string; color?: string }): void
 }>()
@@ -171,6 +178,10 @@ function changeColor(c: string) {
 .widget-btn {
   font-weight: bold;
   font-size: 16px;
+}
+
+.back-btn {
+  font-size: 13px;
 }
 
 .card-content {

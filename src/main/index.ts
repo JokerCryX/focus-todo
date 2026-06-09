@@ -6,7 +6,7 @@ import { getDatabase, closeDatabase } from './database'
 import { runMigrations } from './database/migrations'
 import { registerAllIPC } from './ipc'
 import { createTray, setWidgetDao, createAppIcon } from './tray'
-import { initWidgetManager, restoreAllWidgets, setStickyNoteDao, toggleTodoWidget } from './widget-manager'
+import { initWidgetManager, restoreAllWidgets, setStickyNoteDao, toggleTodoWidget, setStickyTopMode } from './widget-manager'
 import { WidgetDao } from './database/widget.dao'
 import { StickyNoteDao } from './database/sticky-note.dao'
 import { SettingsDao } from './database/settings.dao'
@@ -74,6 +74,14 @@ if (!gotTheLock) {
       if (isQuitting) return
       e.preventDefault()
       hideWindow(mainWindow!)
+    })
+
+    // 主窗口最小化/恢复 → 控制便利贴层级（Win+D 适配）
+    mainWindow.on('minimize', () => {
+      setStickyTopMode(true)
+    })
+    mainWindow.on('restore', () => {
+      setStickyTopMode(false)
     })
 
     mainWindow.webContents.setWindowOpenHandler((details) => {

@@ -1,13 +1,13 @@
 const messages: Record<string, Record<string, string>> = {
   'zh-CN': {
-    'tray.show': '显示主窗口',
+    'tray.show': '显示窗口',
     'tray.newTask': '新建任务',
     'tray.quit': '退出',
     'tray.tomato': '开始番茄钟',
     'tray.todoWidget': '待办组件'
   },
   'en': {
-    'tray.show': 'Show Main Window',
+    'tray.show': 'Show Window',
     'tray.newTask': 'New Task',
     'tray.quit': 'Quit',
     'tray.tomato': 'Start Pomodoro',

@@ -98,7 +98,14 @@
           @click="toggleExpand(task)"
           @contextmenu.prevent="onTaskContextMenu($event, task)"
         >
-          <div class="priority-bar"></div>
+          <div class="priority-bar-wrap" @click.stop="togglePriorityPicker(task)">
+            <div class="priority-bar"></div>
+            <div v-if="priorityPickerId === task.task_id" class="priority-picker">
+              <button v-for="p in priorityOptions" :key="p.value" class="priority-opt" :class="{ active: task.priority === p.value, [`p${p.value}`]: true }" @click.stop="setPriority(task, p.value)" :title="p.label">
+                <span class="opt-dot" :style="p.value ? { background: p.color } : {}"></span>
+              </button>
+            </div>
+          </div>
           <button class="task-check" :class="{ checked: task.complete }" @click.stop="toggleTask(task)">
             <svg viewBox="0 0 16 16" fill="none">
               <circle cx="8" cy="8" r="7" stroke-width="1.2" />
@@ -142,15 +149,19 @@
         </div>
       </Transition>
     </div>
+    <div v-if="isDocked" class="dock-strip"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useTaskStore } from '@/stores/task'
 
 const { t } = useI18n()
+const taskStore = useTaskStore()
 
+const isDocked = ref(false)
 const tasks = ref<any[]>([])
 const currentView = ref<'inbox' | 'today' | 'recent' | 'completed'>('inbox')
 const newTaskTitle = ref('')
@@ -160,6 +171,7 @@ const inputFocused = ref(false)
 const isPinned = ref(false)
 const expandedTaskId = ref<string | null>(null)
 const editingTaskId = ref<string | null>(null)
+const priorityPickerId = ref<string | null>(null)
 const currentTheme = ref('light')
 const dragIndex = ref(-1)
 const dragOverIndex = ref(-1)
@@ -205,12 +217,14 @@ onMounted(async () => {
   isPinned.value = await window.api.window.isAlwaysOnTop()
   window.api.on('task:changed', loadTasks)
   window.api.on('theme:changed', applyWidgetTheme)
+  window.api.on('widget:dock-changed', (docked: boolean) => { isDocked.value = docked })
   document.addEventListener('click', onClickOutside)
 })
 
 onUnmounted(() => {
   window.api.removeListener?.('task:changed', loadTasks)
   window.api.removeListener?.('theme:changed', applyWidgetTheme)
+  window.api.removeListener?.('widget:dock-changed')
   document.removeEventListener('click', onClickOutside)
 })
 
@@ -221,6 +235,9 @@ function onClickOutside(e: MouseEvent) {
   }
   if (!target.closest('.settings-trigger') && !target.closest('.theme-popup')) {
     showThemePicker.value = false
+  }
+  if (!target.closest('.priority-bar-wrap')) {
+    priorityPickerId.value = null
   }
 }
 
@@ -240,16 +257,19 @@ function selectView(view: 'inbox' | 'today' | 'recent' | 'completed') {
 async function addTask() {
   if (!newTaskTitle.value.trim()) return
   await window.api.task.create({ title: newTaskTitle.value.trim() })
+  taskStore.playSound('sound_new')
   newTaskTitle.value = ''
   await loadTasks()
   window.api.send('task:changed')
 }
 
 async function toggleTask(task: any) {
+  const completing = !task.complete
   await window.api.task.update({
     task_id: task.task_id,
     complete: task.complete ? 0 : 1
   })
+  if (completing) taskStore.playSound('sound_complete')
   await loadTasks()
   window.api.send('task:changed')
 }
@@ -281,8 +301,8 @@ function onTaskContextMenu(e: MouseEvent, task: any) {
   menu.style.left = e.clientX + 'px'
   menu.style.top = e.clientY + 'px'
   menu.innerHTML = `
-    <div class="ctx-item" data-action="open">${t('task.openInWindow') || '打开窗口'}</div>
     <div class="ctx-item" data-action="edit">${t('task.editTask') || '编辑任务'}</div>
+    <div class="ctx-item" data-action="open">${t('task.openInWindow') || '打开窗口'}</div>
     <div class="ctx-item ctx-danger" data-action="delete">${t('task.deleteTask')}</div>
   `
   document.body.appendChild(menu)
@@ -302,6 +322,7 @@ function onTaskContextMenu(e: MouseEvent, task: any) {
       }, 0)
     } else if (action === 'delete') {
       await window.api.task.remove(task.task_id)
+      taskStore.playSound('sound_remove')
       if (expandedTaskId.value === task.task_id) expandedTaskId.value = null
       await loadTasks()
       window.api.send('task:changed')
@@ -334,6 +355,24 @@ function getTimeClass(task: any): string {
   if (isToday) return 'time-today'
   if (task.due_date > Date.now()) return 'time-future'
   return 'time-past'
+}
+
+const priorityOptions = [
+  { value: 0, label: t('task.priorityNone'), color: 'transparent' },
+  { value: 1, label: t('task.priorityDaily'), color: '#FBBF24' },
+  { value: 2, label: t('task.priorityImportant'), color: '#34D399' },
+  { value: 3, label: t('task.priorityUrgent'), color: '#F87171' }
+]
+
+function togglePriorityPicker(task: any) {
+  priorityPickerId.value = priorityPickerId.value === task.task_id ? null : task.task_id
+}
+
+async function setPriority(task: any, priority: number) {
+  task.priority = priority
+  priorityPickerId.value = null
+  await window.api.task.update({ task_id: task.task_id, priority })
+  window.api.send('task:changed')
 }
 
 function windowClose() {
@@ -425,6 +464,18 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
     0 2px 6px rgba(15, 17, 23, 0.2),
     0 6px 14px rgba(15, 17, 23, 0.2),
     0 10px 22px rgba(15, 17, 23, 0.16);
+}
+
+.dock-strip {
+  position: fixed;
+  bottom: 0;
+  left: 30px;
+  right: 30px;
+  height: 3px;
+  background: var(--accent-primary);
+  border-radius: 1px;
+  opacity: 0.8;
+  z-index: 999;
 }
 
 /* ── Resize handles ── */
@@ -812,18 +863,35 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
   );
 }
 
-.priority-bar {
+.priority-bar-wrap {
   position: absolute;
   left: 2px;
   top: 8px;
   bottom: 8px;
   width: 2.5px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.priority-bar {
+  width: 100%;
+  height: 100%;
   border-radius: 2px;
-  transition: opacity 0.2s var(--ease-out);
+  transition: all 0.2s var(--ease-out);
+}
+
+.priority-bar-wrap:hover .priority-bar {
+  width: 4px;
+  opacity: 0.8;
 }
 
 .priority-0 .priority-bar {
-  opacity: 0;
+  background: var(--border-primary);
+  opacity: 0.35;
+}
+
+.priority-0 .priority-bar-wrap:hover .priority-bar {
+  opacity: 0.6;
 }
 
 .priority-1 .priority-bar {
@@ -839,6 +907,74 @@ function startResize(dir: ResizeDir, e: MouseEvent) {
 .priority-3 .priority-bar {
   background: #F87171;
   box-shadow: 0 0 6px rgba(248, 113, 113, 0.3);
+}
+
+.priority-picker {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 3px;
+  padding: 3px 4px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(16px) saturate(1.4);
+  border: 1px solid var(--border-primary);
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  animation: pickerIn 0.15s var(--ease-out);
+  z-index: 20;
+}
+
+@keyframes pickerIn {
+  from { opacity: 0; transform: translateY(-50%) translateX(-4px); }
+  to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
+.priority-opt {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--border-primary);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.15s var(--ease-out);
+}
+
+.priority-opt:hover {
+  transform: scale(1.2);
+  border-color: var(--text-tertiary);
+}
+
+.priority-opt.active {
+  border-width: 2px;
+}
+
+.priority-opt.p0.active { border-color: var(--text-tertiary); }
+.priority-opt.p1.active { border-color: #FBBF24; }
+.priority-opt.p2.active { border-color: #34D399; }
+.priority-opt.p3.active { border-color: #F87171; }
+
+.opt-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  transition: transform 0.15s var(--ease-out);
+}
+
+.priority-opt.p0 .opt-dot {
+  width: 6px;
+  height: 6px;
+  border: 1px solid var(--border-primary);
+  background: transparent !important;
+}
+
+.priority-opt.active .opt-dot {
+  transform: scale(1.1);
 }
 
 @keyframes taskEnter {

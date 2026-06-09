@@ -20,6 +20,14 @@ export function registerSettingsIPC(dao: SettingsDao): void {
     return dao.getAll()
   })
 
+  ipcMain.handle('autoStart:get', () => {
+    return app.getLoginItemSettings().openAtLogin
+  })
+
+  ipcMain.handle('autoStart:set', (_e, enabled: boolean) => {
+    app.setLoginItemSettings({ openAtLogin: enabled })
+  })
+
   ipcMain.handle('data:export', async (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)
     const { filePath } = await dialog.showSaveDialog(win!, {

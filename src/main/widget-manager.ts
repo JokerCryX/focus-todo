@@ -5,7 +5,7 @@ import { getWebPreferences, loadWindowPage } from './window-utils'
 import { createAppIcon } from './tray'
 
 const widgetWindows = new Map<string, BrowserWindow>()
-const STRIP_HEIGHT = 6
+const STRIP_HEIGHT = 4
 const SHADOW_PADDING = 30
 const programmaticMoving = new Set<string>()
 
@@ -122,6 +122,11 @@ export function createWidgetWindow(widgetId: string): void {
     webPreferences: getWebPreferences()
   })
 
+  // 便利贴：默认不置顶（普通窗口层级），通过 setStickyTopMode 动态切换
+  if (record.type === 'sticky') {
+    win.setAlwaysOnTop(false)
+  }
+
   win.on('ready-to-show', () => {
     win.show()
   })
@@ -158,6 +163,7 @@ export function createWidgetWindow(widgetId: string): void {
         dockState.savedBounds = { ...bounds }
         dockState.isDocked = true
         dockState.isExpanded = false
+        win.setAlwaysOnTop(true, 'floating')
         animateBounds(widgetId, win, -(bounds.height - STRIP_HEIGHT), 250, easeInCubic)
         win.webContents.send('widget:dock-changed', true)
         startPoll(widgetId, win, dockState)
@@ -166,6 +172,7 @@ export function createWidgetWindow(widgetId: string): void {
           dockState.isDocked = false
           dockState.savedBounds = null
           stopPoll(dockState)
+          win.setAlwaysOnTop(!!record.always_on_top)
           win.webContents.send('widget:dock-changed', false)
           dao?.update(widgetId, { x: bounds.x, y: bounds.y })
         }
@@ -256,6 +263,7 @@ function startPoll(widgetId: string, win: BrowserWindow, state: DockState): void
         state.isExpanded = false
         state.savedBounds = null
         stopPoll(state)
+        win.setAlwaysOnTop(!!record.always_on_top)
         win.webContents.send('widget:dock-changed', false)
         dao?.update(widgetId, { x: bounds.x, y: bounds.y })
         return
@@ -424,4 +432,31 @@ export function sendToMainWindow(channel: string, ...args: any[]): void {
 
 export function getMainWindow(): BrowserWindow | null {
   return mainWindow
+}
+
+/**
+ * 便利贴动态层级切换：
+ * topmost=true → 短暂提升到 normal 级保证可见，然后降回普通层级
+ * topmost=false → 直接降回普通层级
+ */
+export function setStickyTopMode(topmost: boolean): void {
+  if (!dao) return
+  for (const [widgetId, win] of widgetWindows) {
+    if (win.isDestroyed()) continue
+    const record = dao.getById(widgetId)
+    if (record?.type !== 'sticky') continue
+    // 如果该便利贴已被用户手动置顶（floating），跳过
+    if (record.always_on_top) continue
+    if (topmost) {
+      // 短暂提升到 normal 级让便利贴可见，200ms 后降回普通层级
+      win.setAlwaysOnTop(true, 'normal')
+      setTimeout(() => {
+        if (!win.isDestroyed()) {
+          win.setAlwaysOnTop(false)
+        }
+      }, 200)
+    } else {
+      win.setAlwaysOnTop(false)
+    }
+  }
 }

@@ -59,6 +59,10 @@ export default {
     descPlaceholder: 'Add description...',
     reminderLabel: 'Reminder',
     reminderPlaceholder: 'Select date & time',
+    durationLabel: 'Duration',
+    durationToggle: 'Switch to duration mode',
+    durationStart: 'Start time',
+    durationEnd: 'End time',
     categoryLabel: 'Category',
     noCategory: 'No Category',
     priorityLabel: 'Priority',
@@ -180,7 +184,8 @@ export default {
     importFail: 'Import failed:\n{errors}',
     resetConfirm1: 'Are you sure you want to reset all data? This cannot be undone!',
     resetConfirm2: 'Confirm again: All tasks, categories, and settings will be deleted. Continue?',
-    resetSuccess: 'Data has been reset'
+    resetSuccess: 'Data has been reset',
+    autoStartLabel: 'Launch at Login'
   },
 
   repeat: {

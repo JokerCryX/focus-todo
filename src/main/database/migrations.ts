@@ -95,6 +95,13 @@ export function runMigrations(db: Database): void {
   `)
 
   // 索引
+  // 迁移：添加 duration_end 列
+  try {
+    db.exec('SELECT duration_end FROM tasks LIMIT 0')
+  } catch {
+    db.run('ALTER TABLE tasks ADD COLUMN duration_end INTEGER')
+  }
+
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_due_date ON tasks(due_date)')
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category_id)')
   db.run('CREATE INDEX IF NOT EXISTS idx_tasks_complete ON tasks(complete)')

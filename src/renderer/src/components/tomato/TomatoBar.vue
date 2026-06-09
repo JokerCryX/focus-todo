@@ -139,7 +139,7 @@ function onDurWheel(e: WheelEvent, type: 'focus' | 'short' | 'long') {
   const delta = e.deltaY < 0 ? 1 : -1
   switch (type) {
     case 'focus':
-      tomatoStore.focusDuration = Math.max(1, Math.min(120, tomatoStore.focusDuration + delta * 5))
+      tomatoStore.focusDuration = Math.max(1, Math.min(120, tomatoStore.focusDuration + delta))
       break
     case 'short':
       tomatoStore.shortBreakDuration = Math.max(1, Math.min(30, tomatoStore.shortBreakDuration + delta))

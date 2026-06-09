@@ -15,7 +15,7 @@
       <div class="task-meta">
         <span v-if="task.due_date" class="meta-date" :class="{ today: isToday, future: isFuture }">
           <svg class="meta-clock" width="11" height="11" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4.5V8l2.5 1.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
-          {{ formatDate(task.due_date) }}
+          {{ (task as any).duration_end ? formatDuration(task.due_date, (task as any).duration_end) : formatDate(task.due_date) }}
         </span>
         <span
           v-for="tag in task.tags?.slice(0, 2)"
@@ -80,6 +80,25 @@ function formatDate(ts: number): string {
   if (diff === 1) return `${t('date.tomorrow')} ${time}`
   if (diff === -1) return `${t('date.yesterday')} ${time}`
   return `${t('date.dateFormat', { m: d.getMonth() + 1, d: d.getDate() })} ${time}`
+}
+
+function formatDuration(start: number, end: number): string {
+  const sd = new Date(start)
+  const ed = new Date(end)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const target = new Date(sd.getFullYear(), sd.getMonth(), sd.getDate())
+  const diff = (target.getTime() - today.getTime()) / 86400000
+  const sh = String(sd.getHours()).padStart(2, '0')
+  const sm = String(sd.getMinutes()).padStart(2, '0')
+  const eh = String(ed.getHours()).padStart(2, '0')
+  const em = String(ed.getMinutes()).padStart(2, '0')
+  const timeRange = `${sh}:${sm}-${eh}:${em}`
+
+  if (diff === 0) return `${t('date.today')} ${timeRange}`
+  if (diff === 1) return `${t('date.tomorrow')} ${timeRange}`
+  if (diff === -1) return `${t('date.yesterday')} ${timeRange}`
+  return `${t('date.dateFormat', { m: sd.getMonth() + 1, d: sd.getDate() })} ${timeRange}`
 }
 
 async function onToggle() {

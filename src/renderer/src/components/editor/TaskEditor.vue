@@ -29,9 +29,17 @@
 
       <!-- 提醒时间 + 分类 -->
       <div class="field-row">
-        <div class="field-half">
-          <label class="field-label">{{ $t('task.reminderLabel') }}</label>
+        <div class="field-time">
+          <div class="time-label-row">
+            <label class="field-label">{{ isDuration ? $t('task.durationLabel') : $t('task.reminderLabel') }}</label>
+            <label class="duration-toggle" :title="$t('task.durationToggle')">
+              <input type="checkbox" v-model="isDuration" @change="onDurationToggle" />
+              <span class="toggle-icon">⏱</span>
+            </label>
+          </div>
+          <!-- 提醒模式：单个日期时间 -->
           <el-date-picker
+            v-if="!isDuration"
             v-model="form.due_date"
             type="datetime"
             :placeholder="$t('task.reminderPlaceholder')"
@@ -41,8 +49,21 @@
             @change="saveField('due_date')"
             style="width: 100%"
           />
+          <!-- 持续时间模式：日期时间区间（输入框只显示时间区间） -->
+          <el-date-picker
+            v-else
+            v-model="durationRange"
+            type="datetimerange"
+            :start-placeholder="$t('task.durationStart')"
+            :end-placeholder="$t('task.durationEnd')"
+            format="HH:mm"
+            value-format="x"
+            clearable
+            @change="onDurationRangeChange"
+            style="width: 100%"
+          />
         </div>
-        <div class="field-half">
+        <div class="field-category">
           <label class="field-label">{{ $t('task.categoryLabel') }}</label>
           <select v-model="form.category_id" @change="saveField('category_id')">
             <option :value="null">{{ $t('task.noCategory') }}</option>
@@ -155,8 +176,12 @@ const form = reactive({
   priority: 0,
   tags: [] as string[],
   repeat_rule: null as any,
-  files: [] as any[]
+  files: [] as any[],
+  duration_end: null as number | null
 })
+
+const isDuration = ref(false)
+const durationRange = ref<[number, number] | null>(null)
 
 const tagInput = ref('')
 
@@ -177,6 +202,9 @@ watch(task, (t) => {
     form.tags = [...(t.tags || [])]
     form.repeat_rule = t.repeat_rule ? (typeof t.repeat_rule === 'string' ? JSON.parse(t.repeat_rule) : t.repeat_rule) : null
     form.files = t.files ? [...t.files] : []
+    form.duration_end = (t as any).duration_end ?? null
+    isDuration.value = !!(form.due_date && form.duration_end)
+    durationRange.value = (form.due_date && form.duration_end) ? [form.due_date, form.duration_end] : null
   }
 }, { immediate: true })
 
@@ -221,11 +249,43 @@ function onFilesUpdate(files: any[]) {
   saveField('files')
 }
 
+function onDurationToggle() {
+  if (isDuration.value) {
+    // 切到持续时间模式：默认今天 00:00 - 23:59
+    const now = new Date()
+    const dayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    durationRange.value = [dayMs, dayMs + 23 * 3600000 + 59 * 60000]
+    form.due_date = durationRange.value[0]
+    form.duration_end = durationRange.value[1]
+    saveField('due_date')
+    saveField('duration_end')
+  } else {
+    // 切回提醒时间模式：保留 due_date，清除 duration_end
+    durationRange.value = null
+    form.duration_end = null
+    saveField('duration_end')
+  }
+}
+
+function onDurationRangeChange(val: [number, number] | null) {
+  if (val) {
+    form.due_date = val[0]
+    form.duration_end = val[1]
+  } else {
+    form.due_date = null
+    form.duration_end = null
+  }
+  saveField('due_date')
+  saveField('duration_end')
+}
+
 async function saveField(field: string) {
   if (!task.value) return
   const input: any = { task_id: task.value.task_id }
   if (field === 'due_date') {
     input.due_date = form.due_date ? Number(form.due_date) : null
+  } else if (field === 'duration_end') {
+    (input as any).duration_end = form.duration_end ?? null
   } else if (field === 'category_id') {
     input.category_id = form.category_id
   } else if (field === 'tags') {
@@ -370,12 +430,28 @@ textarea:focus {
   margin-bottom: 10px;
 }
 
-.field-half {
+.field-time {
   flex: 1;
   min-width: 0;
 }
 
-.field-half .field-label {
+.field-category {
+  flex: none;
+  width: 110px;
+  max-width: 110px;
+  overflow: hidden;
+}
+
+.field-category select {
+  width: 100%;
+  font-size: var(--font-xs);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.field-time .field-label,
+.field-category .field-label {
   display: block;
   font-size: var(--font-xs);
   color: var(--text-tertiary);
@@ -383,6 +459,92 @@ textarea:focus {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-weight: 600;
+}
+
+/* Element Plus 日期选择器样式覆盖 */
+.field-time :deep(.el-date-editor) {
+  --el-font-size-base: 12px;
+  --el-border-radius-base: var(--radius-sm);
+}
+
+.field-time :deep(.el-input__wrapper) {
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  padding: 2px 8px;
+  transition: border-color var(--transition-fast);
+}
+
+.field-time :deep(.el-input__wrapper:hover) {
+  border-color: var(--text-tertiary);
+}
+
+.field-time :deep(.el-input__wrapper.is-focus) {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-accent);
+}
+
+.field-time :deep(.el-input__inner) {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.field-time :deep(.el-range-input) {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.field-time :deep(.el-range-separator) {
+  font-size: 11px;
+  color: var(--text-tertiary);
+}
+
+.field-time :deep(.el-input__prefix),
+.field-time :deep(.el-input__suffix) {
+  color: var(--text-tertiary);
+}
+
+.time-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3px;
+}
+
+.time-label-row .field-label {
+  margin-bottom: 0;
+}
+
+.duration-toggle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--text-tertiary);
+  user-select: none;
+  transition: color var(--transition-fast);
+}
+
+.duration-toggle:hover {
+  color: var(--accent-primary);
+}
+
+.duration-toggle input {
+  display: none;
+}
+
+.duration-toggle .toggle-icon {
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+}
+
+.duration-toggle input:checked + .toggle-icon {
+  opacity: 1;
+  color: var(--accent-primary);
 }
 
 select {
